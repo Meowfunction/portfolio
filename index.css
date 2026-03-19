@@ -4,9 +4,9 @@
  */
 
 @font-face {
-    font-family: 'Yume';
-    src: url('font/Yume-Regular.otf') format('opentype'),
-         url('font/Yume-Regular.ttf') format('truetype');
+    font-family: 'Dream';
+    src: url('font/Dream-Regular.otf') format('opentype'),
+         url('font/Dream-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -26,8 +26,8 @@
     --bubble-shadow: 0 8px 32px rgba(255, 66, 21, 0.05); /* Soft warming shadow */
     
     /* Typography */
-    --font-heading: 'Yume', sans-serif;
-    --font-body: 'Yume', sans-serif;
+    --font-heading: 'Dream', sans-serif;
+    --font-body: 'Dream', sans-serif;
 }
 
 * {
