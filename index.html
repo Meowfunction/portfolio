@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | Maple's Portfolio</title>
+    <!-- Use Outfit and Inter for modern, premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="images/sumOfMeow.JPG">
+    <meta name="description" content="Maple's Interactive Portfolio Website.">
+</head>
+
+<body>
+    <!-- Background Canvas for Particle Animation -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Main Content Area -->
+    <main id="app-container">
+        <section id="scene-container" class="scene">
+            <!-- Character Image Area -->
+            <div id="character-container">
+                <img id="character-img" src="images/catGreet.png" alt="Maple the Cat">
+            </div>
+
+            <!-- Interactive Dialogue UI -->
+            <div id="dialogue-container">
+                <div id="dialogue-bubble">
+                    <p id="dialogue-text"></p>
+                </div>
+                <div id="controls-container">
+                    <!-- Dynamic Controls (Buttons/Text Inputs) injected via JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="copyright">© 2026 Maple / meowfunction.xyz. All rights reserved. Works displayed here may not be
+        reproduced, distributed, or used without explicit permission.</footer>
+
+    <!-- Scene 2: Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Scene 2: Song Player Widget (top-right vinyl disk + dropdown) -->
+    <div id="song-player">
+        <div id="vinyl-wrapper" title="Music player">
+            <svg id="vinyl-disk" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer disk body -->
+                <circle cx="30" cy="30" r="29" fill="#1a1a1a" stroke="#2d2d2d" stroke-width="1"/>
+                <!-- Groove rings -->
+                <circle cx="30" cy="30" r="24" fill="none" stroke="#262626" stroke-width="1.5"/>
+                <circle cx="30" cy="30" r="19" fill="none" stroke="#262626" stroke-width="1.5"/>
+                <circle cx="30" cy="30" r="14" fill="none" stroke="#262626" stroke-width="1.5"/>
+                <!-- Centre label (brand red) -->
+                <circle cx="30" cy="30" r="9" fill="#FF4215"/>
+                <!-- Spindle hole -->
+                <circle cx="30" cy="30" r="2.5" fill="#111"/>
+            </svg>
+        </div>
+        <div id="song-dropdown"></div>
+    </div>
+
+    <!-- Scene 2: Interact Hint -->
+    <div id="interact-hint">Press <strong>Space</strong> to view</div>
+
+    <!-- Scene 2: Song Collected Popup Toast -->
+    <div id="song-popup"></div>
+
+    <!-- Scene 2: Exhibit Modal Overlay -->
+    <div id="exhibit-modal" class="exhibit-modal-overlay">
+        <div class="exhibit-modal-content">
+            <h2 id="exhibit-modal-title"></h2>
+            <p id="exhibit-modal-desc">Description coming soon.</p>
+            <button class="choice-btn" id="exhibit-close-btn">Close ✕</button>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,502 @@
+/* 
+ * Design System & Variables 
+ * Implements a premium, warm aesthetic with modern touches.
+ */
+:root {
+    --bg-color: #FFFAE8;
+    --text-color: #333333;
+    
+    /* Brand Colors */
+    --primary-color: #FF4215;
+    --secondary-color: #FFD215;
+    --tertiary-color: #157BFF;
+    
+    /* UI Element Colors */
+    --bubble-bg: rgba(255, 255, 255, 0.7);
+    --bubble-border: rgba(255, 255, 255, 0.4);
+    --bubble-shadow: 0 8px 32px rgba(255, 66, 21, 0.05); /* Soft warming shadow */
+    
+    /* Typography */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: var(--font-body);
+    color: var(--text-color);
+    overflow: hidden; /* Prevent scrolling, fixed single-page app feel */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Background Particle Canvas */
+#bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none; /* Let clicks pass through to UI */
+}
+
+/* Main App Container */
+#app-container {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    opacity: 0;
+    animation: fadeIn 1.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* Character Styling */
+#character-container {
+    width: 250px;
+    height: 250px;
+    filter: drop-shadow(0 15px 35px rgba(21, 123, 255, 0.15));
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy hover */
+}
+
+#character-container:hover {
+    transform: translateY(-8px) scale(1.02);
+}
+
+#character-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.3s ease;
+}
+
+/* Dialogue Glassmorphism Bubble */
+#dialogue-container {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+#dialogue-bubble {
+    background: var(--bubble-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--bubble-border);
+    border-radius: 24px;
+    padding: 30px 40px;
+    box-shadow: var(--bubble-shadow);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Speech Bubble 'Tail' */
+#dialogue-bubble::before {
+    content: '';
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 18px 18px 18px;
+    border-style: solid;
+    border-color: transparent transparent var(--bubble-bg) transparent;
+}
+
+#dialogue-text {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    line-height: 1.6;
+    font-weight: 400;
+    min-height: 3em; /* Keep bubble size somewhat stable while typing */
+    text-align: center;
+}
+
+/* Controls Container for dynamic elements */
+#controls-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    min-height: 60px;
+    transition: opacity 0.3s ease;
+}
+
+/* Standard Button Properties */
+.choice-btn {
+    background: white;
+    border: 2px solid transparent;
+    padding: 14px 34px;
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    color: var(--text-color);
+}
+
+.choice-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(21, 123, 255, 0.15); /* Tertiary color glow */
+    border-color: var(--tertiary-color);
+    color: var(--tertiary-color);
+}
+
+.choice-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Input Box Layout & Styling */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.text-input {
+    width: 100%;
+    max-width: 450px;
+    padding: 16px 28px;
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: 50px;
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    outline: none;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    text-align: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.text-input:focus {
+    border-color: var(--tertiary-color);
+    box-shadow: 0 0 0 4px rgba(21, 123, 255, 0.15);
+    background: white;
+}
+
+/* Error State Animation for wrong input */
+.text-input.error {
+    border-color: var(--primary-color);
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+.input-hint {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.6;
+    font-weight: 500;
+}
+
+/* Input row: input + submit button side by side */
+.input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 450px;
+}
+
+.input-row .text-input {
+    flex: 1;
+    max-width: none;
+}
+
+/* Submit arrow button */
+.submit-btn {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    color: var(--text-color);
+}
+
+.submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(21, 123, 255, 0.15);
+    border-color: var(--tertiary-color);
+    color: var(--tertiary-color);
+}
+
+.submit-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Copyright Footer */
+#copyright {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 11px;
+    color: #333;
+    padding: 16px;
+    z-index: 10;
+}
+
+/* ============================================================
+   SCENE 2 — Top-down 2D Gallery Game
+   ============================================================ */
+
+/* Game Canvas: fullscreen, hidden until Scene 2 starts */
+#game-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    z-index: 10;
+    cursor: default;
+    touch-action: none; /* prevent default scroll/zoom during game */
+}
+
+/* ---- Song Player Widget: vinyl disk + dropdown (top-right) ---- */
+#song-player {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+    display: none;          /* shown via JS when Scene 2 starts */
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+#vinyl-wrapper {
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.28));
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#vinyl-wrapper:hover {
+    transform: scale(1.12);
+}
+
+#vinyl-disk {
+    width: 60px;
+    height: 60px;
+    display: block;
+    /* spinning class applied by JS each frame when audio plays */
+}
+
+#vinyl-disk.spinning {
+    animation: spin 2.4s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Song dropdown — glassmorphism card */
+#song-dropdown {
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 196px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.04);
+    animation: fadeIn 0.18s ease;
+}
+
+#song-dropdown.visible {
+    display: flex;
+}
+
+.song-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    font-family: var(--font-heading);
+    font-size: 0.88rem;
+    border-radius: 11px;
+    cursor: pointer;
+    color: var(--text-color);
+    white-space: nowrap;
+    transition: background 0.18s ease;
+}
+
+.song-item:hover:not(.unknown) {
+    background: rgba(21, 123, 255, 0.09);
+}
+
+/* Currently playing track */
+.song-item.playing {
+    color: var(--tertiary-color);
+    font-weight: 600;
+}
+
+.song-item.playing::before {
+    content: '▶';
+    font-size: 0.62rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+/* Uncollected slot */
+.song-item.unknown {
+    color: rgba(51, 51, 51, 0.32);
+    cursor: default;
+    font-style: italic;
+    letter-spacing: 0.04em;
+}
+
+/* Interact Hint: "Press Space to view", bottom-center */
+#interact-hint {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: none;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    color: #666;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 50px;
+    padding: 6px 18px;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* Song Collected Toast Popup */
+#song-popup {
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: none;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 50px;
+    padding: 12px 28px;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+
+/* Exhibit Modal Overlay */
+.exhibit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.exhibit-modal-overlay.visible {
+    display: flex;
+    animation: fadeIn 0.25s ease;
+}
+
+/* Exhibit Modal Card */
+.exhibit-modal-content {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 28px;
+    padding: 44px 48px;
+    max-width: 520px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 12px 48px rgba(255, 66, 21, 0.08), 0 4px 16px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92) translateY(16px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+.exhibit-modal-content h2 {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.exhibit-modal-content p {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--text-color);
+    opacity: 0.7;
+}
