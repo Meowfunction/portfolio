@@ -823,18 +823,6 @@ function drawRoom(room) {
         gCtx.fillStyle = color;
         gCtx.fillRect(x, y, w, h);
 
-        // Diagonal hatch
-        gCtx.save();
-        gCtx.strokeStyle = 'rgba(100, 160, 200, 0.28)';
-        gCtx.lineWidth = 1.2;
-        gCtx.beginPath();
-        for (let hx = x - h; hx < x + w + h; hx += 20) {
-            gCtx.moveTo(hx, y);
-            gCtx.lineTo(hx + h, y + h);
-        }
-        gCtx.stroke();
-        gCtx.restore();
-
         // Border
         gCtx.strokeStyle = '#444';
         gCtx.lineWidth   = WALL_T;

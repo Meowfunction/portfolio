@@ -1,16 +1,7 @@
-/*
- * Design System & Variables
+/* 
+ * Design System & Variables 
  * Implements a premium, warm aesthetic with modern touches.
  */
-
-@font-face {
-    font-family: 'Yume';
-    src: url('font/Yume-Regular.otf') format('opentype'),
-         url('font/Yume-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
 :root {
     --bg-color: #FFFAE8;
     --text-color: #333333;
@@ -26,8 +17,8 @@
     --bubble-shadow: 0 8px 32px rgba(255, 66, 21, 0.05); /* Soft warming shadow */
     
     /* Typography */
-    --font-heading: 'Yume', sans-serif;
-    --font-body: 'Yume', sans-serif;
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
 }
 
 * {
@@ -227,15 +218,6 @@ body {
     color: var(--text-color);
     opacity: 0.6;
     font-weight: 500;
-}
-
-.input-hint-img {
-    max-width: 100%;
-    height: auto;
-    max-height: 36px;
-    opacity: 0.7;
-    user-select: none;
-    pointer-events: none;
 }
 
 /* Input row: input + submit button side by side */
