@@ -312,11 +312,10 @@ window.addEventListener('load', () => {
 // ============================================================
 
 // ---- World & Physics Constants ----
-// World scaled to 0.7x of original (2000x1600 → 1400x1120)
 const WORLD_W        = 1400;
 const WORLD_H        = 1120;
 const WALL_T         = 8;      // wall thickness (px)
-const DOOR_GAP       = 60;     // doorway opening width
+const DOOR_GAP       = 80;     // doorway opening width
 const PLAYER_RADIUS  = 24;     // player circle radius
 const PLAYER_SPEED   = 3;      // px per frame
 const EXHIBIT_W      = 40;     // exhibit frame width
@@ -324,6 +323,9 @@ const EXHIBIT_H      = 50;     // exhibit frame height
 const EXHIBIT_DIST   = 80;     // interaction trigger distance
 const SONG_RADIUS    = 20;     // collectible circle radius
 const SONG_DIST      = 30;     // collection trigger distance
+
+// ---- Outer boundary constants ----
+const OB = { left: 50, right: 1350, top: 70, bottom: 1080 };
 
 // ---- Game Runtime State ----
 let gameCanvas2 = null;  // renamed to avoid clash with bg-canvas `canvas`
@@ -337,7 +339,17 @@ const keys2 = {};  // keyboard state (renamed to avoid conflicts)
 let camX = 0, camY = 0;
 
 // ---- Player ----
-const player = { x: 700, y: 560 };
+// dir: facing direction used for sprite selection ('left'|'right'|'up'|'down')
+const player = { x: 700, y: 555, dir: 'down' };
+
+// ---- Player Sprites (loaded on demand; filename convention: images/player_<dir>.png) ----
+const playerSprites = { left: null, right: null, up: null, down: null };
+['left', 'right', 'up', 'down'].forEach(dir => {
+    const img = new Image();
+    img.src = `images/player_${dir}.png`;
+    img.onload  = () => { playerSprites[dir] = img; };
+    img.onerror = () => { /* silently fall back to drawn cat */ };
+});
 
 // ---- Progress ----
 let songsCollected = 0;
@@ -362,42 +374,54 @@ let currentAudio    = null;  // active HTML Audio instance
 let songDropdownOpen = false;
 
 
-// ---- Room Definitions (all coords scaled 0.7x from original) ----
+// ---- Room Definitions ----
+// Layout (world 1400×1120, playable 50..1350, 70..1080):
+//   Top row    y: 80–450   (h=370)   Left col x: 55–525 (w=470), Right col x: 875–1345 (w=470)
+//   Corridor   y: 450–650  (h=200)
+//   Bottom row y: 650–1020 (h=370)
+// doorGapCx: x-centre of doorway opening (off-centre toward the corridor so rooms face each other)
+// entered: revealed when player walks in; solid rooms are always open (ice cream counter)
 const ROOMS = [
-    { id: 'culinary',     label: 'Culinary',     x:  56, y:  70, w: 224, h: 196, color: '#FFF3DC', doorSide: 'bottom' },
-    { id: 'iceCream',     label: 'Ice Cream',    x: 476, y:  70, w: 266, h: 196, color: '#E8F6FF', doorSide: 'bottom' },
-    { id: 'design',       label: 'Design',       x: 966, y:  70, w: 224, h: 196, color: '#EDFFF0', doorSide: 'bottom' },
-    { id: 'illustration', label: 'Illustration', x:  56, y: 476, w: 224, h: 196, color: '#FFEDF5', doorSide: 'top'    },
-    { id: 'poetry',       label: 'Poetry',       x: 966, y: 476, w: 224, h: 196, color: '#F5EDFF', doorSide: 'top'    },
+    { id: 'culinary',     label: 'culinary',     x:  55, y:  80, w: 470, h: 370,
+      color: '#FFF3DC', doorSide: 'bottom', doorGapCx:  55 + 470 * 0.78, entered: false },
+    { id: 'iceCream',     label: 'Ice Cream',    x: 600, y:  95, w: 200, h: 185,
+      color: '#E8F6FF', solid: true },
+    { id: 'design',       label: 'design room',  x: 875, y:  80, w: 470, h: 370,
+      color: '#EDFFF0', doorSide: 'bottom', doorGapCx: 875 + 470 * 0.22, entered: false },
+    { id: 'illustration', label: 'illustration', x:  55, y: 650, w: 470, h: 370,
+      color: '#FFEDF5', doorSide: 'top',    doorGapCx:  55 + 470 * 0.78, entered: false },
+    { id: 'poetry',       label: 'poetry',       x: 875, y: 650, w: 470, h: 370,
+      color: '#F5EDFF', doorSide: 'top',    doorGapCx: 875 + 470 * 0.22, entered: false },
 ];
 
-// ---- Exhibit Definitions (coords scaled 0.7x) ----
+// ---- Exhibit Definitions ----
+// Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
-    // Culinary (5) — top wall & left wall
-    { id: 'c1', roomId: 'culinary',     label: 'Tamagoyaki',      x:  80, y:  77 },
-    { id: 'c2', roomId: 'culinary',     label: 'Chawanmushi',     x: 123, y:  77 },
-    { id: 'c3', roomId: 'culinary',     label: 'Matcha Roll',     x: 249, y:  77 },
-    { id: 'c4', roomId: 'culinary',     label: 'Mochi Daifuku',   x:  63, y: 179 },
-    { id: 'c5', roomId: 'culinary',     label: 'Onigiri',         x:  63, y: 228 },
-    // Design (4) — top wall & left wall
-    { id: 'd1', roomId: 'design',       label: 'Brand Identity',  x:  991, y:  77 },
-    { id: 'd2', roomId: 'design',       label: 'UI System',       x: 1043, y:  77 },
-    { id: 'd3', roomId: 'design',       label: 'Poster Series',   x: 1162, y:  77 },
-    { id: 'd4', roomId: 'design',       label: 'Typography',      x:  972, y: 182 },
-    // Illustration (4) — top wall & left wall
-    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit',   x:  80, y: 483 },
-    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat',   x: 140, y: 483 },
-    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer',   x: 249, y: 483 },
-    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes',    x:  63, y: 585 },
-    // Poetry (1 — coming soon placeholder)
-    { id: 'p1', roomId: 'poetry',       label: 'Coming Soon',     x: 1078, y: 483, comingSoon: true },
+    // Culinary  (x: 55–525, y: 80–450) — top wall & left wall
+    { id: 'c1', roomId: 'culinary',     label: 'Tamagoyaki',     x: 140, y: 115 },
+    { id: 'c2', roomId: 'culinary',     label: 'Chawanmushi',    x: 250, y: 115 },
+    { id: 'c3', roomId: 'culinary',     label: 'Matcha Roll',    x: 410, y: 115 },
+    { id: 'c4', roomId: 'culinary',     label: 'Mochi Daifuku',  x:  90, y: 240 },
+    { id: 'c5', roomId: 'culinary',     label: 'Onigiri',        x:  90, y: 380 },
+    // Design    (x: 875–1345, y: 80–450) — top wall & right wall
+    { id: 'd1', roomId: 'design',       label: 'Brand Identity', x: 960, y: 115 },
+    { id: 'd2', roomId: 'design',       label: 'UI System',      x: 1080, y: 115 },
+    { id: 'd3', roomId: 'design',       label: 'Poster Series',  x: 1240, y: 115 },
+    { id: 'd4', roomId: 'design',       label: 'Typography',     x: 1310, y: 240 },
+    // Illustration (x: 55–525, y: 650–1020) — top wall & left wall
+    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit',  x: 140, y: 685 },
+    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat',  x: 250, y: 685 },
+    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer',  x: 410, y: 685 },
+    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes',   x:  90, y: 810 },
+    // Poetry    (x: 875–1345, y: 650–1020) — top wall (coming soon placeholder)
+    { id: 'p1', roomId: 'poetry',       label: 'Coming Soon',    x: 1110, y: 685, comingSoon: true },
 ];
 
-// ---- Song Collectibles (coords scaled 0.7x, with name + audio file) ----
+// ---- Song Collectibles (one per room, centred inside) ----
 const SONGS = [
-    { id: 's1', x: 168, y: 186, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3'    },
-    { id: 's2', x: 168, y: 578, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3' },
-    { id: 's3', x: 1078, y: 179, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3'     },
+    { id: 's1', x: 290, y: 265, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3'    },
+    { id: 's2', x: 290, y: 835, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3' },
+    { id: 's3', x: 1110, y: 265, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3'     },
 ];
 
 // ---- Mobile Joystick ----
@@ -424,37 +448,42 @@ function buildWalls() {
     wallRects = [];
 
     // --- Outer lobby walls ---
-    // The outer boundary is x=35..1365, y=35..1085 (scaled from 50..1950, 50..1550)
     const iceRoom  = ROOMS.find(r => r.id === 'iceCream');
     const sDoorCx  = iceRoom.x + iceRoom.w / 2;
     const sDoorL   = sDoorCx - DOOR_GAP / 2;
     const sDoorR   = sDoorCx + DOOR_GAP / 2;
 
     // Top wall — left segment
-    wallRects.push({ x: 35, y: 35, w: sDoorL - 35, h: WALL_T });
+    wallRects.push({ x: OB.left,  y: OB.top, w: sDoorL - OB.left, h: WALL_T });
     // Top wall — secret door segment (flagged so collision can be skipped when open)
-    wallRects.push({ x: sDoorL, y: 35, w: DOOR_GAP, h: WALL_T, isSecretDoor: true });
+    wallRects.push({ x: sDoorL, y: OB.top, w: DOOR_GAP, h: WALL_T, isSecretDoor: true });
     // Top wall — right segment
-    wallRects.push({ x: sDoorR, y: 35, w: 1365 - sDoorR, h: WALL_T });
+    wallRects.push({ x: sDoorR, y: OB.top, w: OB.right - sDoorR, h: WALL_T });
 
-    wallRects.push({ x:   35, y: 1079, w: 1330, h: WALL_T }); // bottom
-    wallRects.push({ x:   35, y:   35, w: WALL_T, h: 1050 }); // left
-    wallRects.push({ x: 1358, y:   35, w: WALL_T, h: 1050 }); // right
+    wallRects.push({ x: OB.left,  y: OB.bottom, w: OB.right - OB.left, h: WALL_T }); // bottom
+    wallRects.push({ x: OB.left,  y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }); // left
+    wallRects.push({ x: OB.right, y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }); // right
 
-    // --- Room walls ---
+    // --- Ice cream counter — solid block ---
+    const ice = ROOMS.find(r => r.solid);
+    if (ice) {
+        wallRects.push({ x: ice.x, y: ice.y, w: ice.w, h: ice.h });
+    }
+
+    // --- Room walls (non-solid only) ---
     for (const room of ROOMS) {
-        addRoomWalls(room);
+        if (!room.solid) addRoomWalls(room);
     }
 }
 
 /**
  * Emit AABB wall rects for one room.
- * The gap (doorway) is centered on the door-side wall.
+ * The gap (doorway) uses room.doorGapCx when set, otherwise centres on the wall.
  */
 function addRoomWalls(room) {
     const { x, y, w, h, doorSide } = room;
     const T  = WALL_T;
-    const gapCx = x + w / 2;
+    const gapCx = room.doorGapCx !== undefined ? room.doorGapCx : x + w / 2;
     const gapL  = gapCx - DOOR_GAP / 2;
     const gapR  = gapCx + DOOR_GAP / 2;
 
@@ -659,6 +688,23 @@ function update() {
         const resolved = resolveMove(player.x + dx, player.y + dy);
         player.x = resolved.x;
         player.y = resolved.y;
+
+        // Update facing direction for sprite rendering
+        // Prefer the dominant axis; fall back to last direction
+        if (Math.abs(dx) >= Math.abs(dy) && dx !== 0) {
+            player.dir = dx > 0 ? 'right' : 'left';
+        } else if (dy !== 0) {
+            player.dir = dy > 0 ? 'down' : 'up';
+        }
+    }
+
+    // --- Room entry tracking (reveal mechanic) ---
+    for (const room of ROOMS) {
+        if (room.solid || room.entered) continue;
+        if (player.x > room.x && player.x < room.x + room.w &&
+            player.y > room.y && player.y < room.y + room.h) {
+            room.entered = true;
+        }
     }
 
     // --- Camera: centre on player, clamped to world bounds ---
@@ -752,30 +798,76 @@ function seg(x1, y1, x2, y2) {
 }
 
 function drawLobbyFloor() {
-    // Warm cream floor inside lobby bounds (scaled 0.7x from original 58,58,1884,1484)
     gCtx.fillStyle = '#FFF8E0';
-    gCtx.fillRect(41, 41, 1319, 1039);
+    gCtx.fillRect(OB.left, OB.top, OB.right - OB.left, OB.bottom - OB.top);
 }
 
 /**
- * Draw a single room: floor tile, doormat, walls with gap.
+ * Draw a single room.
+ *
+ * Solid rooms (ice cream counter): hatched fill + outline, no door, no label.
+ * Regular rooms: opaque label overlay until entered, then lighter floor revealed.
  */
 function drawRoom(room) {
-    const { x, y, w, h, color, label, doorSide } = room;
-    const gapCx = x + w / 2;
-    const gapL  = gapCx - DOOR_GAP / 2;
-    const gapR  = gapCx + DOOR_GAP / 2;
+    const { x, y, w, h, color } = room;
+
+    // ── Ice cream counter (solid obstacle) ──────────────────────────────────
+    if (room.solid) {
+        // Fill
+        gCtx.fillStyle = color;
+        gCtx.fillRect(x, y, w, h);
+
+        // Diagonal hatch
+        gCtx.save();
+        gCtx.strokeStyle = 'rgba(100, 160, 200, 0.28)';
+        gCtx.lineWidth = 1.2;
+        gCtx.beginPath();
+        for (let hx = x - h; hx < x + w + h; hx += 20) {
+            gCtx.moveTo(hx, y);
+            gCtx.lineTo(hx + h, y + h);
+        }
+        gCtx.stroke();
+        gCtx.restore();
+
+        // Border
+        gCtx.strokeStyle = '#444';
+        gCtx.lineWidth   = WALL_T;
+        gCtx.lineCap     = 'square';
+        gCtx.strokeRect(x + WALL_T/2, y + WALL_T/2, w - WALL_T, h - WALL_T);
+        return;
+    }
+
+    // ── Regular rooms ────────────────────────────────────────────────────────
+    const doorSide = room.doorSide;
+    const gapCx    = room.doorGapCx !== undefined ? room.doorGapCx : x + w / 2;
+    const gapL     = gapCx - DOOR_GAP / 2;
+    const gapR     = gapCx + DOOR_GAP / 2;
 
     // Floor
     gCtx.fillStyle = color;
     gCtx.fillRect(x, y, w, h);
 
-    // Doormat (subtle welcome strip)
-    gCtx.fillStyle = 'rgba(190, 165, 140, 0.35)';
-    if (doorSide === 'bottom') gCtx.fillRect(gapL, y + h - 4, DOOR_GAP, 14);
-    else                        gCtx.fillRect(gapL, y - 10,    DOOR_GAP, 14);
+    if (!room.entered) {
+        // ── Opaque overlay: hide interior, show label ────────────────────────
+        gCtx.save();
+        gCtx.fillStyle = 'rgba(30, 25, 20, 0.45)';
+        gCtx.fillRect(x, y, w, h);
+        gCtx.restore();
 
-    // Walls
+        gCtx.fillStyle     = 'rgba(255, 248, 235, 0.90)';
+        gCtx.font          = '600 24px Outfit, sans-serif';
+        gCtx.textAlign     = 'center';
+        gCtx.letterSpacing = '3px';
+        gCtx.fillText(room.label, x + w / 2, y + h / 2 + 9);
+        gCtx.letterSpacing = '0px';
+    } else {
+        // ── Revealed interior: doormat hint ─────────────────────────────────
+        gCtx.fillStyle = 'rgba(190, 165, 140, 0.35)';
+        if (doorSide === 'bottom') gCtx.fillRect(gapL, y + h - 4, DOOR_GAP, 14);
+        else                        gCtx.fillRect(gapL, y - 10,    DOOR_GAP, 14);
+    }
+
+    // ── Walls (always drawn on top) ──────────────────────────────────────────
     gCtx.strokeStyle = '#333';
     gCtx.lineWidth   = WALL_T;
     gCtx.lineCap     = 'square';
@@ -797,14 +889,6 @@ function drawRoom(room) {
     // Side walls
     seg(x,     y - WALL_T/2, x,     y + h + WALL_T/2);
     seg(x + w, y - WALL_T/2, x + w, y + h + WALL_T/2);
-
-    // Room label (centred, light)
-    gCtx.fillStyle  = 'rgba(100, 85, 70, 0.45)';
-    gCtx.font       = '600 13px Outfit, sans-serif';
-    gCtx.textAlign  = 'center';
-    gCtx.letterSpacing = '2px';
-    gCtx.fillText(label.toUpperCase(), x + w / 2, y + h / 2 + 5);
-    gCtx.letterSpacing = '0px';
 }
 
 /**
@@ -822,19 +906,19 @@ function drawOuterLobbyWalls() {
 
     // Top wall (split for secret door)
     gCtx.strokeStyle = '#222';
-    seg(35, 35, sDL, 35);
-    seg(sDR, 35, 1365, 35);
+    seg(OB.left, OB.top, sDL, OB.top);
+    seg(sDR, OB.top, OB.right, OB.top);
 
     // Locked door segment
     if (!secretDoorOpen) {
         gCtx.strokeStyle = '#996633';
-        seg(sDL, 35, sDR, 35);
+        seg(sDL, OB.top, sDR, OB.top);
     }
 
     gCtx.strokeStyle = '#222';
-    seg(35, 1085, 1365, 1085); // bottom
-    seg(35, 35, 35, 1085);     // left
-    seg(1365, 35, 1365, 1085); // right
+    seg(OB.left,  OB.bottom, OB.right, OB.bottom); // bottom
+    seg(OB.left,  OB.top,    OB.left,  OB.bottom); // left
+    seg(OB.right, OB.top,    OB.right, OB.bottom); // right
 }
 
 /**
@@ -851,22 +935,22 @@ function drawSecretDoorArea() {
         gCtx.shadowBlur   = 24;
         gCtx.shadowColor  = '#FFD215';
         gCtx.fillStyle    = 'rgba(255, 210, 21, 0.4)';
-        gCtx.fillRect(sDL, 29, DOOR_GAP, 16);
+        gCtx.fillRect(sDL, OB.top - 6, DOOR_GAP, 16);
         gCtx.restore();
 
         gCtx.fillStyle  = '#B8860B';
         gCtx.font       = '600 11px Outfit, sans-serif';
         gCtx.textAlign  = 'center';
-        gCtx.fillText('✨ SECRET', sDCx, 27);
+        gCtx.fillText('✨ SECRET', sDCx, OB.top - 8);
     } else {
         // Lock icon + progress label
         gCtx.font      = '14px sans-serif';
         gCtx.textAlign = 'center';
-        gCtx.fillText('🔒', sDCx, 32);
+        gCtx.fillText('🔒', sDCx, OB.top + 8);
 
         gCtx.fillStyle = 'rgba(140,120,100,0.8)';
         gCtx.font      = '11px Outfit, sans-serif';
-        gCtx.fillText(`${songsCollected}/3 songs`, sDCx, 21);
+        gCtx.fillText(`${songsCollected}/3 songs`, sDCx, OB.top - 2);
     }
 }
 
@@ -927,9 +1011,12 @@ function drawEyeIcon(cx, cy) {
 
 /**
  * Draw a framed exhibit on the wall.
+ * Hidden until the player has entered the room.
  * Shows a canvas-drawn eye icon when the player is close enough to interact.
  */
 function drawExhibit(ex) {
+    const parentRoom = ROOMS.find(r => r.id === ex.roomId);
+    if (parentRoom && !parentRoom.entered) return; // hidden behind opaque overlay
     const { x, y, comingSoon } = ex;
     const hw = EXHIBIT_W / 2;
     const hh = EXHIBIT_H / 2;
@@ -968,24 +1055,41 @@ function drawExhibit(ex) {
 }
 
 /**
- * Draw the catIce image inside the ice cream room (counter position).
+ * Draw the catIce image centred on the ice cream counter.
  */
 function drawIceCreamCat() {
     if (!iceCatImage) return;
     const room = ROOMS.find(r => r.id === 'iceCream');
-    const imgW = 110, imgH = 110;
-    const imgX = room.x + room.w * 0.65 - imgW / 2;
-    const imgY = room.y + room.h * 0.28 - imgH / 2;
+    const imgW = Math.min(room.w - 16, 120);
+    const imgH = imgW;
+    const imgX = room.x + room.w / 2 - imgW / 2;
+    const imgY = room.y + room.h / 2 - imgH / 2;
     gCtx.drawImage(iceCatImage, imgX, imgY, imgW, imgH);
 }
 
 /**
- * Draw the top-down cat player:
- * warm tan body, darker triangle ears, dot eyes, tiny nose.
+ * Draw the player.
+ * If a sprite image is loaded for the current direction, draws that.
+ * Otherwise falls back to the hand-drawn cat (placeholder until elephant sprites arrive).
  */
 function drawPlayer() {
-    const { x, y } = player;
+    const { x, y, dir } = player;
     const R = PLAYER_RADIUS;
+
+    // ── Sprite path ──────────────────────────────────────────────────────────
+    const sprite = playerSprites[dir];
+    if (sprite) {
+        const sw = R * 3.5;
+        const sh = R * 3.5;
+        gCtx.save();
+        gCtx.shadowBlur  = 10;
+        gCtx.shadowColor = 'rgba(0,0,0,0.15)';
+        gCtx.drawImage(sprite, x - sw / 2, y - sh / 2, sw, sh);
+        gCtx.restore();
+        return;
+    }
+
+    // ── Fallback: drawn cat ──────────────────────────────────────────────────
 
     gCtx.save();
 
