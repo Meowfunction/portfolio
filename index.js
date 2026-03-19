@@ -442,21 +442,21 @@ const ROOMS = [
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
     // Culinary  (x: 55–525, y: 80–450) — top wall & left wall
-    { id: 'c1', roomId: 'culinary', label: 'Tamagoyaki', x: 140, y: 115 },
-    { id: 'c2', roomId: 'culinary', label: 'Chawanmushi', x: 250, y: 115 },
-    { id: 'c3', roomId: 'culinary', label: 'Matcha Roll', x: 410, y: 115 },
-    { id: 'c4', roomId: 'culinary', label: 'Mochi Daifuku', x: 90, y: 240 },
-    { id: 'c5', roomId: 'culinary', label: 'Onigiri', x: 90, y: 380 },
+    { id: 'c1', roomId: 'culinary', label: 'Tamagoyaki',   x: 140, y: 115, imgSrc: 'rooms/culinary/BananaMage.png'       },
+    { id: 'c2', roomId: 'culinary', label: 'Chawanmushi',  x: 250, y: 115, imgSrc: 'rooms/culinary/ChatGPTDot.png'       },
+    { id: 'c3', roomId: 'culinary', label: 'Matcha Roll',  x: 410, y: 115, imgSrc: 'rooms/culinary/Hamwich.png'          },
+    { id: 'c4', roomId: 'culinary', label: 'Mochi Daifuku',x:  90, y: 240, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
+    { id: 'c5', roomId: 'culinary', label: 'Onigiri',      x:  90, y: 380, imgSrc: 'rooms/culinary/ItalyPasta.png'       },
     // Design    (x: 875–1345, y: 80–450) — top wall & right wall
-    { id: 'd1', roomId: 'design', label: 'Brand Identity', x: 960, y: 115 },
-    { id: 'd2', roomId: 'design', label: 'UI System', x: 1080, y: 115 },
-    { id: 'd3', roomId: 'design', label: 'Poster Series', x: 1240, y: 115 },
-    { id: 'd4', roomId: 'design', label: 'Typography', x: 1310, y: 240 },
+    { id: 'd1', roomId: 'design', label: 'Brand Identity', x:  960, y: 115, imgSrc: 'rooms/design/AGIHoodie.png'         },
+    { id: 'd2', roomId: 'design', label: 'UI System',      x: 1080, y: 115, imgSrc: 'rooms/design/FoxtailVase.png'       },
+    { id: 'd3', roomId: 'design', label: 'Poster Series',  x: 1240, y: 115, imgSrc: 'rooms/design/GoldenRatio.png'       },
+    { id: 'd4', roomId: 'design', label: 'Typography',     x: 1310, y: 240, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
     // Illustration (x: 55–525, y: 650–1020) — top wall & left wall
-    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit', x: 140, y: 685 },
-    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat', x: 250, y: 685 },
-    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer', x: 410, y: 685 },
-    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes', x: 90, y: 810 },
+    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit',  x: 140, y: 685, imgSrc: 'rooms/illustration/BriefSpring.png'   },
+    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat',  x: 250, y: 685, imgSrc: 'rooms/illustration/ImBach.GIF'        },
+    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer',  x: 410, y: 685, imgSrc: 'rooms/illustration/Neowsletter.png'   },
+    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes',   x:  90, y: 810, imgSrc: 'rooms/illustration/PiecedAnimals.png' },
     // Poetry    (x: 875–1345, y: 650–1020) — four poems on the walls
     { id: 'p1', roomId: 'poetry', label: 'I',   x:  960, y: 685, iceImgIdx: 0,
       poem: "Today I shall die.\nPlease with\nDandelions,\nWith dandelions fill,\nFill them please!\nDandelions,\nWithin\nMy grave.\nA soft bed\nLaden with\nSoft dreams." },
@@ -467,6 +467,15 @@ const EXHIBITS = [
     { id: 'p4', roomId: 'poetry', label: 'IV',  x: 1310, y: 790, iceImgIdx: 3,
       poem: "Looking up at an osmanthus tree:\nYou must love me, or\nFluttering down those sweet\nKisses,\nWhy are they chasing me?" },
 ];
+
+// Preload room artwork images for exhibits that have imgSrc
+EXHIBITS.forEach(ex => {
+    if (ex.imgSrc) {
+        const img = new Image();
+        img.src = ex.imgSrc;
+        ex._img = img;
+    }
+});
 
 // Assign ice_cream images to exhibits — fixed cycle (skip exhibits that already have iceImgIdx set)
 EXHIBITS.forEach((ex, i) => { if (ex.iceImgIdx === undefined) ex.iceImgIdx = i % 6; });
@@ -825,14 +834,16 @@ function render() {
     gCtx.save();
     gCtx.translate(-camX, -camY);
 
-    // Background image covers the full world
+    // Background image drawn 50% larger than the world, centered
     if (bgImage) {
-        gCtx.drawImage(bgImage, 0, 0, WORLD_W, WORLD_H);
+        const bw = WORLD_W * 1.5, bh = WORLD_H * 1.5;
+        gCtx.drawImage(bgImage, -(bw - WORLD_W) / 2, -(bh - WORLD_H) / 2, bw, bh);
     } else {
         gCtx.fillStyle = '#FFFAE8';
         gCtx.fillRect(0, 0, WORLD_W, WORLD_H);
     }
 
+    drawLobbyFloor();
     ROOMS.forEach(drawRoom);
     drawOuterLobbyWalls();
     drawSecretDoorArea();
@@ -870,10 +881,27 @@ function drawLobbyFloor() {
 function drawRoom(room) {
     const { x, y, w, h, color } = room;
 
-    // ── Ice cream counter (solid obstacle) — transparent, no visual ─────────
-    if (room.solid) return;
+    // ── Ice cream counter (solid obstacle) ──────────────────────────────────
+    if (room.solid) {
+        gCtx.fillStyle = color;
+        gCtx.fillRect(x, y, w, h);
+        gCtx.strokeStyle = '#444';
+        gCtx.lineWidth = WALL_T;
+        gCtx.lineCap = 'square';
+        gCtx.strokeRect(x + WALL_T / 2, y + WALL_T / 2, w - WALL_T, h - WALL_T);
+        return;
+    }
 
-    // ── Regular rooms — transparent walls, only opaque overlay when not entered
+    // ── Regular rooms ────────────────────────────────────────────────────────
+    const doorSide = room.doorSide;
+    const gapCx = room.doorGapCx !== undefined ? room.doorGapCx : x + w / 2;
+    const gapL = gapCx - DOOR_GAP / 2;
+    const gapR = gapCx + DOOR_GAP / 2;
+
+    // Floor
+    gCtx.fillStyle = color;
+    gCtx.fillRect(x, y, w, h);
+
     if (!room.entered) {
         // Opaque overlay: hide interior, show label
         gCtx.save();
@@ -887,7 +915,32 @@ function drawRoom(room) {
         gCtx.letterSpacing = '3px';
         gCtx.fillText(room.label, x + w / 2, y + h / 2 + 9);
         gCtx.letterSpacing = '0px';
+    } else {
+        // Doormat hint at entrance
+        gCtx.fillStyle = 'rgba(190, 165, 140, 0.35)';
+        if (doorSide === 'bottom') gCtx.fillRect(gapL, y + h - 4, DOOR_GAP, 14);
+        else gCtx.fillRect(gapL, y - 10, DOOR_GAP, 14);
     }
+
+    // Walls
+    gCtx.strokeStyle = '#333';
+    gCtx.lineWidth = WALL_T;
+    gCtx.lineCap = 'square';
+
+    if (doorSide === 'top') {
+        seg(x - WALL_T / 2, y, gapL, y);
+        seg(gapR, y, x + w + WALL_T / 2, y);
+    } else {
+        seg(x - WALL_T / 2, y, x + w + WALL_T / 2, y);
+    }
+    if (doorSide === 'bottom') {
+        seg(x - WALL_T / 2, y + h, gapL, y + h);
+        seg(gapR, y + h, x + w + WALL_T / 2, y + h);
+    } else {
+        seg(x - WALL_T / 2, y + h, x + w + WALL_T / 2, y + h);
+    }
+    seg(x, y - WALL_T / 2, x, y + h + WALL_T / 2);
+    seg(x + w, y - WALL_T / 2, x + w, y + h + WALL_T / 2);
 }
 
 /**
@@ -1016,9 +1069,12 @@ function drawExhibit(ex) {
         gCtx.fillText('?', x, y);
         gCtx.textBaseline = 'alphabetic';
     } else {
+        // Prefer room artwork; fall back to ice cream image
+        const artImg = ex._img && ex._img.complete && ex._img.naturalWidth > 0 ? ex._img : null;
         const iceImg = ICE_IMAGES[ex.iceImgIdx];
-        if (iceImg && iceImg.complete && iceImg.naturalWidth > 0) {
-            gCtx.drawImage(iceImg, x - hw, y - hh, EXHIBIT_W, EXHIBIT_H);
+        const img = artImg || (iceImg && iceImg.complete && iceImg.naturalWidth > 0 ? iceImg : null);
+        if (img) {
+            gCtx.drawImage(img, x - hw, y - hh, EXHIBIT_W, EXHIBIT_H);
         }
     }
 
