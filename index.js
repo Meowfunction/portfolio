@@ -675,6 +675,7 @@ function initGame() {
     // Exhibit modal close button
     document.getElementById('exhibit-close-btn').addEventListener('click', closeModal);
     document.getElementById('poem-close-btn').addEventListener('click', closeModal);
+    document.getElementById('artwork-close-btn').addEventListener('click', closeModal);
     // Click on interact hint to open on mobile
     document.getElementById('interact-hint').addEventListener('click', () => {
         if (nearestExhibit) openModal(nearestExhibit);
@@ -1069,12 +1070,10 @@ function drawExhibit(ex) {
         gCtx.fillText('?', x, y);
         gCtx.textBaseline = 'alphabetic';
     } else {
-        // Prefer room artwork; fall back to ice cream image
-        const artImg = ex._img && ex._img.complete && ex._img.naturalWidth > 0 ? ex._img : null;
+        // Always show ice cream icon as the wall marker
         const iceImg = ICE_IMAGES[ex.iceImgIdx];
-        const img = artImg || (iceImg && iceImg.complete && iceImg.naturalWidth > 0 ? iceImg : null);
-        if (img) {
-            gCtx.drawImage(img, x - hw, y - hh, EXHIBIT_W, EXHIBIT_H);
+        if (iceImg && iceImg.complete && iceImg.naturalWidth > 0) {
+            gCtx.drawImage(iceImg, x - hw, y - hh, EXHIBIT_W, EXHIBIT_H);
         }
     }
 
@@ -1289,6 +1288,11 @@ function openModal(exhibit) {
         document.getElementById('poem-numeral').textContent = exhibit.label;
         document.getElementById('poem-body').textContent = exhibit.poem;
         document.getElementById('poem-modal').classList.add('visible');
+    } else if (exhibit.imgSrc) {
+        // Show full artwork image
+        document.getElementById('artwork-title').textContent = exhibit.label;
+        document.getElementById('artwork-img').src = exhibit.imgSrc;
+        document.getElementById('artwork-modal').classList.add('visible');
     } else {
         document.getElementById('exhibit-modal-title').textContent = exhibit.label;
         document.getElementById('exhibit-modal-desc').textContent =
@@ -1302,6 +1306,7 @@ function openModal(exhibit) {
 function closeModal() {
     document.getElementById('exhibit-modal').classList.remove('visible');
     document.getElementById('poem-modal').classList.remove('visible');
+    document.getElementById('artwork-modal').classList.remove('visible');
 }
 
 

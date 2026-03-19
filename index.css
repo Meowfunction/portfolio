@@ -589,3 +589,48 @@ body {
     align-self: center;
     margin-top: 8px;
 }
+
+/* ---- Artwork Modal ---- */
+.artwork-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.artwork-modal-overlay.visible {
+    display: flex;
+}
+
+.artwork-page {
+    background: #FEFAF2;
+    border-radius: 6px;
+    padding: 36px 40px 32px;
+    max-width: 560px;
+    width: 92%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.22), 2px 2px 0 #e8dfc8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.artwork-title {
+    font-family: Dream, sans-serif;
+    font-size: 1.2rem;
+    color: #555;
+    letter-spacing: 0.08em;
+}
+
+#artwork-img {
+    max-width: 100%;
+    max-height: 60vh;
+    border-radius: 4px;
+    object-fit: contain;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
