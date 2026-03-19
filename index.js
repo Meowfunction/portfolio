@@ -169,7 +169,7 @@ const scenes = {
             const btn = document.getElementById('fee-submit');
             input.focus();
             const attempt = () => {
-                if (input.value === "You have the best domain ever!") {
+                if (input.value === "you have the best domain ever!") {
                     transitionTo('scene2_intro');
                 } else {
                     triggerInputError(input);
@@ -198,7 +198,7 @@ const scenes = {
             const btn = document.getElementById('fee-submit');
             input.focus();
             const attempt = () => {
-                if (input.value === "Your works are amazing!") {
+                if (input.value === "your works are amazing!") {
                     transitionTo('scene2_intro');
                 } else {
                     triggerInputError(input);
@@ -418,23 +418,23 @@ let songDropdownOpen = false;
 const ROOMS = [
     {
         id: 'culinary', label: 'culinary', x: 55, y: 80, w: 470, h: 370,
-        color: '#FFF3DC', doorSide: 'bottom', doorGapCx: 55 + 470 * 0.78, entered: false
+        color: '#FFF3DC', opaqueColor: '#FFD366', doorSide: 'bottom', doorGapCx: 55 + 470 * 0.78, entered: false
     },
     {
-        id: 'iceCream', label: 'Ice Cream', x: 600, y: 95, w: 200, h: 185,
+        id: 'iceCream', label: 'Ice Cream', x: 600, y: 200, w: 200, h: 185,
         color: '#E8F6FF', solid: true
     },
     {
         id: 'design', label: 'design room', x: 875, y: 80, w: 470, h: 370,
-        color: '#EDFFF0', doorSide: 'bottom', doorGapCx: 875 + 470 * 0.22, entered: false
+        color: '#EDFFF0', opaqueColor: '#5EFFA0', doorSide: 'bottom', doorGapCx: 875 + 470 * 0.22, entered: false
     },
     {
         id: 'illustration', label: 'illustration', x: 55, y: 650, w: 470, h: 370,
-        color: '#FFEDF5', doorSide: 'top', doorGapCx: 55 + 470 * 0.78, entered: false
+        color: '#FFEDF5', opaqueColor: '#FFB0D8', doorSide: 'top', doorGapCx: 55 + 470 * 0.78, entered: false
     },
     {
         id: 'poetry', label: 'poetry', x: 875, y: 650, w: 470, h: 370,
-        color: '#F5EDFF', doorSide: 'top', doorGapCx: 875 + 470 * 0.22, entered: false
+        color: '#F5EDFF', opaqueColor: '#CCA0FF', doorSide: 'top', doorGapCx: 875 + 470 * 0.22, entered: false
     },
 ];
 
@@ -442,30 +442,38 @@ const ROOMS = [
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
     // Culinary  (x: 55–525, y: 80–450) — top wall & left wall
-    { id: 'c1', roomId: 'culinary', label: 'Tamagoyaki',   x: 140, y: 115, imgSrc: 'rooms/culinary/BananaMage.png'       },
-    { id: 'c2', roomId: 'culinary', label: 'Chawanmushi',  x: 250, y: 115, imgSrc: 'rooms/culinary/ChatGPTDot.png'       },
-    { id: 'c3', roomId: 'culinary', label: 'Matcha Roll',  x: 410, y: 115, imgSrc: 'rooms/culinary/Hamwich.png'          },
-    { id: 'c4', roomId: 'culinary', label: 'Mochi Daifuku',x:  90, y: 240, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
-    { id: 'c5', roomId: 'culinary', label: 'Onigiri',      x:  90, y: 380, imgSrc: 'rooms/culinary/ItalyPasta.png'       },
+    { id: 'c1', roomId: 'culinary', label: 'Tamagoyaki', x: 140, y: 115, imgSrc: 'rooms/culinary/BananaMage.png' },
+    { id: 'c2', roomId: 'culinary', label: 'Chawanmushi', x: 250, y: 115, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
+    { id: 'c3', roomId: 'culinary', label: 'Matcha Roll', x: 410, y: 115, imgSrc: 'rooms/culinary/Hamwich.png' },
+    { id: 'c4', roomId: 'culinary', label: 'Mochi Daifuku', x: 90, y: 240, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
+    { id: 'c5', roomId: 'culinary', label: 'Onigiri', x: 90, y: 380, imgSrc: 'rooms/culinary/ItalyPasta.png' },
     // Design    (x: 875–1345, y: 80–450) — top wall & right wall
-    { id: 'd1', roomId: 'design', label: 'Brand Identity', x:  960, y: 115, imgSrc: 'rooms/design/AGIHoodie.png'         },
-    { id: 'd2', roomId: 'design', label: 'UI System',      x: 1080, y: 115, imgSrc: 'rooms/design/FoxtailVase.png'       },
-    { id: 'd3', roomId: 'design', label: 'Poster Series',  x: 1240, y: 115, imgSrc: 'rooms/design/GoldenRatio.png'       },
-    { id: 'd4', roomId: 'design', label: 'Typography',     x: 1310, y: 240, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
+    { id: 'd1', roomId: 'design', label: 'Brand Identity', x: 960, y: 115, imgSrc: 'rooms/design/AGIHoodie.jpg' },
+    { id: 'd2', roomId: 'design', label: 'UI System', x: 1080, y: 115, imgSrc: 'rooms/design/FoxtailVase.png' },
+    { id: 'd3', roomId: 'design', label: 'Poster Series', x: 1240, y: 115, imgSrc: 'rooms/design/GoldenRatio.png' },
+    { id: 'd4', roomId: 'design', label: 'Typography', x: 1310, y: 240, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
     // Illustration (x: 55–525, y: 650–1020) — top wall & left wall
-    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit',  x: 140, y: 685, imgSrc: 'rooms/illustration/BriefSpring.png'   },
-    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat',  x: 250, y: 685, imgSrc: 'rooms/illustration/ImBach.GIF'        },
-    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer',  x: 410, y: 685, imgSrc: 'rooms/illustration/Neowsletter.png'   },
-    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes',   x:  90, y: 810, imgSrc: 'rooms/illustration/PiecedAnimals.png' },
+    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit', x: 140, y: 685, imgSrc: 'rooms/illustration/BriefSpring.png' },
+    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat', x: 250, y: 685, imgSrc: 'rooms/illustration/ImBach.GIF' },
+    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer', x: 410, y: 685, imgSrc: 'rooms/illustration/Neowsletter.png' },
+    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes', x: 90, y: 810, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
     // Poetry    (x: 875–1345, y: 650–1020) — four poems on the walls
-    { id: 'p1', roomId: 'poetry', label: 'I',   x:  960, y: 685, iceImgIdx: 0,
-      poem: "Today I shall die.\nPlease with\nDandelions,\nWith dandelions fill,\nFill them please!\nDandelions,\nWithin\nMy grave.\nA soft bed\nLaden with\nSoft dreams." },
-    { id: 'p2', roomId: 'poetry', label: 'II',  x: 1080, y: 685, iceImgIdx: 1,
-      poem: "A face of clay.\nPinched, pulled, punched, pummeled-\nIs it but the toil of reform?\nHah!\nInborn in my body is\nA seed of ill omen.\n\nThe blaze of hope.\nScathed, scorched, singed, seared-\nHas it ushered in a pristine rebirth?\nNay!\nWhen the fruit breaks it's the life\nFlashing before one's eyes." },
-    { id: 'p3', roomId: 'poetry', label: 'III', x: 1210, y: 685, iceImgIdx: 2,
-      poem: "In the subway I sat on\nA seat between\nSeats.\nI leaned forward and saw the compartments\nA tunnel of\nPeople, their waves.\nNo one was talking so the\nSilence stretched my loneliness.\nBut I realized that\nLoneliness is everyone's\nOpen secret." },
-    { id: 'p4', roomId: 'poetry', label: 'IV',  x: 1310, y: 790, iceImgIdx: 3,
-      poem: "Looking up at an osmanthus tree:\nYou must love me, or\nFluttering down those sweet\nKisses,\nWhy are they chasing me?" },
+    {
+        id: 'p1', roomId: 'poetry', label: 'I', x: 960, y: 685, iceImgIdx: 0,
+        poem: "Today I shall die.\nPlease with\nDandelions,\nWith dandelions fill,\nFill them please!\nDandelions,\nWithin\nMy grave.\nA soft bed\nLaden with\nSoft dreams."
+    },
+    {
+        id: 'p2', roomId: 'poetry', label: 'II', x: 1080, y: 685, iceImgIdx: 1,
+        poem: "A face of clay.\nPinched, pulled, punched, pummeled-\nIs it but the toil of reform?\nHah!\nInborn in my body is\nA seed of ill omen.\n\nThe blaze of hope.\nScathed, scorched, singed, seared-\nHas it ushered in a pristine rebirth?\nNay!\nWhen the fruit breaks it's the life\nFlashing before one's eyes."
+    },
+    {
+        id: 'p3', roomId: 'poetry', label: 'III', x: 1210, y: 685, iceImgIdx: 2,
+        poem: "In the subway I sat on\nA seat between\nSeats.\nI leaned forward and saw the compartments\nA tunnel of\nPeople, their waves.\nNo one was talking so the\nSilence stretched my loneliness.\nBut I realized that\nLoneliness is everyone's\nOpen secret."
+    },
+    {
+        id: 'p4', roomId: 'poetry', label: 'IV', x: 1310, y: 790, iceImgIdx: 3,
+        poem: "Looking up at an osmanthus tree:\nYou must love me, or\nFluttering down those sweet\nKisses,\nWhy are they chasing me?"
+    },
 ];
 
 // Preload room artwork images for exhibits that have imgSrc
@@ -869,8 +877,7 @@ function seg(x1, y1, x2, y2) {
 }
 
 function drawLobbyFloor() {
-    gCtx.fillStyle = '#FFF8E0';
-    gCtx.fillRect(OB.left, OB.top, OB.right - OB.left, OB.bottom - OB.top);
+    // Ground is transparent — background image shows through
 }
 
 /**
@@ -884,12 +891,9 @@ function drawRoom(room) {
 
     // ── Ice cream counter (solid obstacle) ──────────────────────────────────
     if (room.solid) {
+        // Color fill only — no border
         gCtx.fillStyle = color;
         gCtx.fillRect(x, y, w, h);
-        gCtx.strokeStyle = '#444';
-        gCtx.lineWidth = WALL_T;
-        gCtx.lineCap = 'square';
-        gCtx.strokeRect(x + WALL_T / 2, y + WALL_T / 2, w - WALL_T, h - WALL_T);
         return;
     }
 
@@ -899,49 +903,29 @@ function drawRoom(room) {
     const gapL = gapCx - DOOR_GAP / 2;
     const gapR = gapCx + DOOR_GAP / 2;
 
-    // Floor
-    gCtx.fillStyle = color;
-    gCtx.fillRect(x, y, w, h);
-
     if (!room.entered) {
-        // Opaque overlay: hide interior, show label
-        gCtx.save();
-        gCtx.fillStyle = 'rgba(20, 18, 15, 0.52)';
+        // Opaque overlay: same hue, more saturated — no dark fill, no border
+        gCtx.fillStyle = room.opaqueColor || color;
         gCtx.fillRect(x, y, w, h);
-        gCtx.restore();
 
-        gCtx.fillStyle = 'rgba(255, 248, 235, 0.92)';
+        // Label in white over the saturated fill
+        gCtx.fillStyle = 'rgba(255, 255, 255, 0.92)';
         gCtx.font = '600 24px Dream, sans-serif';
         gCtx.textAlign = 'center';
         gCtx.letterSpacing = '3px';
         gCtx.fillText(room.label, x + w / 2, y + h / 2 + 9);
         gCtx.letterSpacing = '0px';
     } else {
+        // Entered: reveal floor in the room's light tint
+        gCtx.fillStyle = color;
+        gCtx.fillRect(x, y, w, h);
+
         // Doormat hint at entrance
         gCtx.fillStyle = 'rgba(190, 165, 140, 0.35)';
         if (doorSide === 'bottom') gCtx.fillRect(gapL, y + h - 4, DOOR_GAP, 14);
         else gCtx.fillRect(gapL, y - 10, DOOR_GAP, 14);
     }
-
-    // Walls
-    gCtx.strokeStyle = '#333';
-    gCtx.lineWidth = WALL_T;
-    gCtx.lineCap = 'square';
-
-    if (doorSide === 'top') {
-        seg(x - WALL_T / 2, y, gapL, y);
-        seg(gapR, y, x + w + WALL_T / 2, y);
-    } else {
-        seg(x - WALL_T / 2, y, x + w + WALL_T / 2, y);
-    }
-    if (doorSide === 'bottom') {
-        seg(x - WALL_T / 2, y + h, gapL, y + h);
-        seg(gapR, y + h, x + w + WALL_T / 2, y + h);
-    } else {
-        seg(x - WALL_T / 2, y + h, x + w + WALL_T / 2, y + h);
-    }
-    seg(x, y - WALL_T / 2, x, y + h + WALL_T / 2);
-    seg(x + w, y - WALL_T / 2, x + w, y + h + WALL_T / 2);
+    // No border strokes — borders are transparent
 }
 
 /**
@@ -1000,15 +984,15 @@ function drawSong(song) {
 
     gCtx.save();
     // Yellow glow around the image shape (no filled circle)
-    gCtx.shadowBlur  = 22;
+    gCtx.shadowBlur = 22;
     gCtx.shadowColor = '#FFD215';
     if (songImg && songImg.complete && songImg.naturalWidth > 0) {
         gCtx.drawImage(songImg, song.x - sz / 2, song.y - sz / 2, sz, sz);
     } else {
         // Fallback: plain ♪ with glow
-        gCtx.fillStyle    = '#FFD215';
-        gCtx.font         = `bold ${SONG_RADIUS}px sans-serif`;
-        gCtx.textAlign    = 'center';
+        gCtx.fillStyle = '#FFD215';
+        gCtx.font = `bold ${SONG_RADIUS}px sans-serif`;
+        gCtx.textAlign = 'center';
         gCtx.textBaseline = 'middle';
         gCtx.fillText('♪', song.x, song.y);
         gCtx.textBaseline = 'alphabetic';
