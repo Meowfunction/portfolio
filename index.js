@@ -161,7 +161,7 @@ const scenes = {
                     <input type="text" id="fee-input" class="text-input" placeholder="Type here..." autocomplete="off">
                     <button class="submit-btn" id="fee-submit">➜</button>
                 </div>
-                <div class="input-hint">Type: "You have the best domain ever!"</div>
+                <img class="input-hint-img" src="images/You_have_the_best_domain_ever.PNG" alt="hint" draggable="false">
             </div>
         `,
         setup: () => {
@@ -190,7 +190,7 @@ const scenes = {
                     <input type="text" id="fee-input" class="text-input" placeholder="Type here..." autocomplete="off">
                     <button class="submit-btn" id="fee-submit">➜</button>
                 </div>
-                <div class="input-hint">Type: "Your works are amazing!"</div>
+                <img class="input-hint-img" src="images/Your_works_are_amazing.PNG" alt="hint" draggable="false">
             </div>
         `,
         setup: () => {
