@@ -373,6 +373,28 @@ const _iceCatImg = new Image();
 _iceCatImg.src = 'images/catIce.png';
 _iceCatImg.onload = () => { iceCatImage = _iceCatImg; };
 
+// ---- Ice cream exhibit frame images (ice_cream/ice1–6.PNG, randomised per exhibit) ----
+const ICE_IMAGES = Array.from({ length: 6 }, (_, i) => {
+    const img = new Image();
+    img.src = `ice_cream/ice${i + 1}.PNG`;
+    return img;
+});
+
+// ---- Song collectible images (daisy / sea / space) ----
+const SONG_IMAGES = {};
+[['daisy', 'images/daisy.PNG'], ['sea', 'images/sea.PNG'], ['space', 'images/space.PNG']].forEach(([key, src]) => {
+    const img = new Image();
+    img.src = src;
+    SONG_IMAGES[key] = img;
+});
+
+// ---- Paw icon image (shown near exhibits instead of eye) ----
+let pawImage = null;
+const _pawImg = new Image();
+_pawImg.src = 'images/paw.PNG';
+_pawImg.onload = () => { pawImage = _pawImg; };
+_pawImg.onerror = () => { /* silently fall back to eye */ };
+
 // ---- Audio player state ----
 let collectedSongs  = [];    // ordered list of collected song objects
 let currentSongIdx  = -1;    // index into collectedSongs
@@ -423,11 +445,14 @@ const EXHIBITS = [
     { id: 'p1', roomId: 'poetry',       label: 'Coming Soon',    x: 1110, y: 685, comingSoon: true },
 ];
 
+// Assign a random ice_cream image (0–5) to each exhibit once at load time
+EXHIBITS.forEach(ex => { ex.iceImgIdx = Math.floor(Math.random() * 6); });
+
 // ---- Song Collectibles (one per room, centred inside) ----
 const SONGS = [
-    { id: 's1', x: 290, y: 265, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3'    },
-    { id: 's2', x: 290, y: 835, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3' },
-    { id: 's3', x: 1110, y: 265, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3'     },
+    { id: 's1', x: 290, y: 265, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3',    imgKey: 'daisy' },
+    { id: 's2', x: 290, y: 835, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea'   },
+    { id: 's3', x: 1110, y: 265, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3',     imgKey: 'space' },
 ];
 
 // ---- Mobile Joystick ----
@@ -704,13 +729,11 @@ function update() {
         }
     }
 
-    // --- Room entry tracking (reveal mechanic) ---
+    // --- Room entry tracking (reveal while inside, hide again when leaving) ---
     for (const room of ROOMS) {
-        if (room.solid || room.entered) continue;
-        if (player.x > room.x && player.x < room.x + room.w &&
-            player.y > room.y && player.y < room.y + room.h) {
-            room.entered = true;
-        }
+        if (room.solid) continue;
+        room.entered = (player.x > room.x && player.x < room.x + room.w &&
+                        player.y > room.y && player.y < room.y + room.h);
     }
 
     // --- Camera: centre on player, clamped to world bounds ---
@@ -962,12 +985,19 @@ function drawSong(song) {
     gCtx.fill();
 
     gCtx.shadowBlur = 0;
-    gCtx.fillStyle      = 'white';
-    gCtx.font           = 'bold 17px sans-serif';
-    gCtx.textAlign      = 'center';
-    gCtx.textBaseline   = 'middle';
-    gCtx.fillText('♪', song.x, song.y);
-    gCtx.textBaseline = 'alphabetic';
+    // Draw the song's image inside the circle, fall back to ♪ if not loaded
+    const songImg = SONG_IMAGES[song.imgKey];
+    if (songImg && songImg.complete && songImg.naturalWidth > 0) {
+        const sz = SONG_RADIUS * 1.2;
+        gCtx.drawImage(songImg, song.x - sz / 2, song.y - sz / 2, sz, sz);
+    } else {
+        gCtx.fillStyle      = 'white';
+        gCtx.font           = 'bold 17px sans-serif';
+        gCtx.textAlign      = 'center';
+        gCtx.textBaseline   = 'middle';
+        gCtx.fillText('♪', song.x, song.y);
+        gCtx.textBaseline = 'alphabetic';
+    }
     gCtx.restore();
 }
 
@@ -1027,7 +1057,7 @@ function drawExhibit(ex) {
     gCtx.lineWidth   = 1;
     gCtx.strokeRect(x - hw + 4, y - hh + 4, EXHIBIT_W - 8, EXHIBIT_H - 8);
 
-    // Artwork placeholder fill
+    // Artwork fill
     if (comingSoon) {
         gCtx.fillStyle    = '#CCC';
         gCtx.font         = '12px sans-serif';
@@ -1036,15 +1066,25 @@ function drawExhibit(ex) {
         gCtx.fillText('?', x, y);
         gCtx.textBaseline = 'alphabetic';
     } else {
-        // Warm parchment colour standing in for artwork
-        gCtx.fillStyle = '#EDE0C4';
-        gCtx.fillRect(x - hw + 6, y - hh + 6, EXHIBIT_W - 12, EXHIBIT_H - 12);
+        // Draw the assigned ice cream image inside the frame, or fall back to parchment
+        const iceImg = ICE_IMAGES[ex.iceImgIdx];
+        if (iceImg && iceImg.complete && iceImg.naturalWidth > 0) {
+            gCtx.drawImage(iceImg, x - hw + 6, y - hh + 6, EXHIBIT_W - 12, EXHIBIT_H - 12);
+        } else {
+            gCtx.fillStyle = '#EDE0C4';
+            gCtx.fillRect(x - hw + 6, y - hh + 6, EXHIBIT_W - 12, EXHIBIT_H - 12);
+        }
     }
 
-    // Canvas-drawn eye icon (no emoji) when player is in range
+    // Paw icon when player is in range (falls back to eye if paw not loaded)
     const dist = Math.hypot(player.x - x, player.y - y);
     if (dist < EXHIBIT_DIST) {
-        drawEyeIcon(x, y - hh - 10);
+        if (pawImage) {
+            const pw = 20, ph = 20;
+            gCtx.drawImage(pawImage, x - pw / 2, y - hh - ph - 4, pw, ph);
+        } else {
+            drawEyeIcon(x, y - hh - 10);
+        }
     }
 }
 
