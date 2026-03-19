@@ -395,7 +395,7 @@ const EXHIBITS = [
 
 // ---- Song Collectibles (coords scaled 0.7x, with name + audio file) ----
 const SONGS = [
-    { id: 's1', x: 168, y: 186, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.wav'    },
+    { id: 's1', x: 168, y: 186, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3'    },
     { id: 's2', x: 168, y: 578, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3' },
     { id: 's3', x: 1078, y: 179, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3'     },
 ];
