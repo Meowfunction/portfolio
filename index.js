@@ -212,7 +212,7 @@ const scenes = {
     },
     scene2_intro: {
         img: 'images/catIce.png',
-        text: "Th-ake wooer tyme to wook around. Woo can gek ph-ree eyss kreem on the th-op of the ss-kreen.",
+        text: "Th-ake wooer tyme to wook around. Woo can gek ph-ree eyss kreem ewee-where.",
         controls: () => `
             <button class="choice-btn" onclick="handleChoice('Thank you')">Thank you</button>
         `
@@ -288,7 +288,7 @@ function transitionTo(sceneId) {
 }
 
 // Global hook for inline HTML onclick handlers
-window.handleChoice = function(choice) {
+window.handleChoice = function (choice) {
     if (choice === 'Yes') {
         transitionTo('fee_yes');
     } else if (choice === 'No') {
@@ -312,24 +312,24 @@ window.addEventListener('load', () => {
 // ============================================================
 
 // ---- World & Physics Constants ----
-const WORLD_W        = 1400;
-const WORLD_H        = 1120;
-const WALL_T         = 8;      // wall thickness (px)
-const DOOR_GAP       = 80;     // doorway opening width
-const PLAYER_RADIUS  = 24;     // player circle radius
-const PLAYER_SPEED   = 3;      // px per frame
-const EXHIBIT_W      = 40;     // exhibit frame width
-const EXHIBIT_H      = 50;     // exhibit frame height
-const EXHIBIT_DIST   = 80;     // interaction trigger distance
-const SONG_RADIUS    = 20;     // collectible circle radius
-const SONG_DIST      = 30;     // collection trigger distance
+const WORLD_W = 1400;
+const WORLD_H = 1120;
+const WALL_T = 8;      // wall thickness (px)
+const DOOR_GAP = 80;     // doorway opening width
+const PLAYER_RADIUS = 24;     // player circle radius
+const PLAYER_SPEED = 3;      // px per frame
+const EXHIBIT_W = 40;     // exhibit frame width
+const EXHIBIT_H = 50;     // exhibit frame height
+const EXHIBIT_DIST = 80;     // interaction trigger distance
+const SONG_RADIUS = 32;     // collectible circle radius
+const SONG_DIST = 30;     // collection trigger distance
 
 // ---- Outer boundary constants ----
 const OB = { left: 50, right: 1350, top: 70, bottom: 1080 };
 
 // ---- Game Runtime State ----
 let gameCanvas2 = null;  // renamed to avoid clash with bg-canvas `canvas`
-let gCtx        = null;
+let gCtx = null;
 let gameRunning = false;
 
 // ---- Input ----
@@ -345,15 +345,15 @@ const player = { x: 700, y: 555, dir: 'down' };
 // ---- Player Sprites (loaded on demand; avatar/ folder) ----
 const playerSprites = { left: null, right: null, up: null, down: null };
 const SPRITE_PATHS = {
-    left:  'avatar/left.PNG',
+    left: 'avatar/left.PNG',
     right: 'avatar/right.PNG',
-    up:    'avatar/back.PNG',
-    down:  'avatar/front.PNG',
+    up: 'avatar/back.PNG',
+    down: 'avatar/front.PNG',
 };
 Object.entries(SPRITE_PATHS).forEach(([dir, path]) => {
     const img = new Image();
     img.src = path;
-    img.onload  = () => { playerSprites[dir] = img; };
+    img.onload = () => { playerSprites[dir] = img; };
     img.onerror = () => { /* silently fall back to drawn cat */ };
 });
 
@@ -366,6 +366,12 @@ let popupTimer = 0;
 
 // ---- Which exhibit the player is closest to (if in range) ----
 let nearestExhibit = null;
+
+// ---- Scene 2 background image ----
+let bgImage = null;
+const _bgImg = new Image();
+_bgImg.src = 'images/background.png';
+_bgImg.onload = () => { bgImage = _bgImg; };
 
 // ---- Ice cream cat image (preloaded) ----
 let iceCatImage = null;
@@ -396,9 +402,9 @@ _pawImg.onload = () => { pawImage = _pawImg; };
 _pawImg.onerror = () => { /* silently fall back to eye */ };
 
 // ---- Audio player state ----
-let collectedSongs  = [];    // ordered list of collected song objects
-let currentSongIdx  = -1;    // index into collectedSongs
-let currentAudio    = null;  // active HTML Audio instance
+let collectedSongs = [];    // ordered list of collected song objects
+let currentSongIdx = -1;    // index into collectedSongs
+let currentAudio = null;  // active HTML Audio instance
 let songDropdownOpen = false;
 
 
@@ -410,60 +416,77 @@ let songDropdownOpen = false;
 // doorGapCx: x-centre of doorway opening (off-centre toward the corridor so rooms face each other)
 // entered: revealed when player walks in; solid rooms are always open (ice cream counter)
 const ROOMS = [
-    { id: 'culinary',     label: 'culinary',     x:  55, y:  80, w: 470, h: 370,
-      color: '#FFF3DC', doorSide: 'bottom', doorGapCx:  55 + 470 * 0.78, entered: false },
-    { id: 'iceCream',     label: 'Ice Cream',    x: 600, y:  95, w: 200, h: 185,
-      color: '#E8F6FF', solid: true },
-    { id: 'design',       label: 'design room',  x: 875, y:  80, w: 470, h: 370,
-      color: '#EDFFF0', doorSide: 'bottom', doorGapCx: 875 + 470 * 0.22, entered: false },
-    { id: 'illustration', label: 'illustration', x:  55, y: 650, w: 470, h: 370,
-      color: '#FFEDF5', doorSide: 'top',    doorGapCx:  55 + 470 * 0.78, entered: false },
-    { id: 'poetry',       label: 'poetry',       x: 875, y: 650, w: 470, h: 370,
-      color: '#F5EDFF', doorSide: 'top',    doorGapCx: 875 + 470 * 0.22, entered: false },
+    {
+        id: 'culinary', label: 'culinary', x: 55, y: 80, w: 470, h: 370,
+        color: '#FFF3DC', doorSide: 'bottom', doorGapCx: 55 + 470 * 0.78, entered: false
+    },
+    {
+        id: 'iceCream', label: 'Ice Cream', x: 600, y: 95, w: 200, h: 185,
+        color: '#E8F6FF', solid: true
+    },
+    {
+        id: 'design', label: 'design room', x: 875, y: 80, w: 470, h: 370,
+        color: '#EDFFF0', doorSide: 'bottom', doorGapCx: 875 + 470 * 0.22, entered: false
+    },
+    {
+        id: 'illustration', label: 'illustration', x: 55, y: 650, w: 470, h: 370,
+        color: '#FFEDF5', doorSide: 'top', doorGapCx: 55 + 470 * 0.78, entered: false
+    },
+    {
+        id: 'poetry', label: 'poetry', x: 875, y: 650, w: 470, h: 370,
+        color: '#F5EDFF', doorSide: 'top', doorGapCx: 875 + 470 * 0.22, entered: false
+    },
 ];
 
 // ---- Exhibit Definitions ----
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
     // Culinary  (x: 55–525, y: 80–450) — top wall & left wall
-    { id: 'c1', roomId: 'culinary',     label: 'Tamagoyaki',     x: 140, y: 115 },
-    { id: 'c2', roomId: 'culinary',     label: 'Chawanmushi',    x: 250, y: 115 },
-    { id: 'c3', roomId: 'culinary',     label: 'Matcha Roll',    x: 410, y: 115 },
-    { id: 'c4', roomId: 'culinary',     label: 'Mochi Daifuku',  x:  90, y: 240 },
-    { id: 'c5', roomId: 'culinary',     label: 'Onigiri',        x:  90, y: 380 },
+    { id: 'c1', roomId: 'culinary', label: 'Tamagoyaki', x: 140, y: 115 },
+    { id: 'c2', roomId: 'culinary', label: 'Chawanmushi', x: 250, y: 115 },
+    { id: 'c3', roomId: 'culinary', label: 'Matcha Roll', x: 410, y: 115 },
+    { id: 'c4', roomId: 'culinary', label: 'Mochi Daifuku', x: 90, y: 240 },
+    { id: 'c5', roomId: 'culinary', label: 'Onigiri', x: 90, y: 380 },
     // Design    (x: 875–1345, y: 80–450) — top wall & right wall
-    { id: 'd1', roomId: 'design',       label: 'Brand Identity', x: 960, y: 115 },
-    { id: 'd2', roomId: 'design',       label: 'UI System',      x: 1080, y: 115 },
-    { id: 'd3', roomId: 'design',       label: 'Poster Series',  x: 1240, y: 115 },
-    { id: 'd4', roomId: 'design',       label: 'Typography',     x: 1310, y: 240 },
+    { id: 'd1', roomId: 'design', label: 'Brand Identity', x: 960, y: 115 },
+    { id: 'd2', roomId: 'design', label: 'UI System', x: 1080, y: 115 },
+    { id: 'd3', roomId: 'design', label: 'Poster Series', x: 1240, y: 115 },
+    { id: 'd4', roomId: 'design', label: 'Typography', x: 1310, y: 240 },
     // Illustration (x: 55–525, y: 650–1020) — top wall & left wall
-    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit',  x: 140, y: 685 },
-    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat',  x: 250, y: 685 },
-    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer',  x: 410, y: 685 },
-    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes',   x:  90, y: 810 },
-    // Poetry    (x: 875–1345, y: 650–1020) — top wall (coming soon placeholder)
-    { id: 'p1', roomId: 'poetry',       label: 'Coming Soon',    x: 1110, y: 685, comingSoon: true },
+    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit', x: 140, y: 685 },
+    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat', x: 250, y: 685 },
+    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer', x: 410, y: 685 },
+    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes', x: 90, y: 810 },
+    // Poetry    (x: 875–1345, y: 650–1020) — four poems on the walls
+    { id: 'p1', roomId: 'poetry', label: 'I',   x:  960, y: 685, iceImgIdx: 0,
+      poem: "Today I shall die.\nPlease with\nDandelions,\nWith dandelions fill,\nFill them please!\nDandelions,\nWithin\nMy grave.\nA soft bed\nLaden with\nSoft dreams." },
+    { id: 'p2', roomId: 'poetry', label: 'II',  x: 1080, y: 685, iceImgIdx: 1,
+      poem: "A face of clay.\nPinched, pulled, punched, pummeled-\nIs it but the toil of reform?\nHah!\nInborn in my body is\nA seed of ill omen.\n\nThe blaze of hope.\nScathed, scorched, singed, seared-\nHas it ushered in a pristine rebirth?\nNay!\nWhen the fruit breaks it's the life\nFlashing before one's eyes." },
+    { id: 'p3', roomId: 'poetry', label: 'III', x: 1210, y: 685, iceImgIdx: 2,
+      poem: "In the subway I sat on\nA seat between\nSeats.\nI leaned forward and saw the compartments\nA tunnel of\nPeople, their waves.\nNo one was talking so the\nSilence stretched my loneliness.\nBut I realized that\nLoneliness is everyone's\nOpen secret." },
+    { id: 'p4', roomId: 'poetry', label: 'IV',  x: 1310, y: 790, iceImgIdx: 3,
+      poem: "Looking up at an osmanthus tree:\nYou must love me, or\nFluttering down those sweet\nKisses,\nWhy are they chasing me?" },
 ];
 
-// Assign a random ice_cream image (0–5) to each exhibit once at load time
-EXHIBITS.forEach(ex => { ex.iceImgIdx = Math.floor(Math.random() * 6); });
+// Assign ice_cream images to exhibits — fixed cycle (skip exhibits that already have iceImgIdx set)
+EXHIBITS.forEach((ex, i) => { if (ex.iceImgIdx === undefined) ex.iceImgIdx = i % 6; });
 
 // ---- Song Collectibles (one per room, centred inside) ----
 const SONGS = [
-    { id: 's1', x: 290, y: 265, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3',    imgKey: 'daisy' },
-    { id: 's2', x: 290, y: 835, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea'   },
-    { id: 's3', x: 1110, y: 265, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3',     imgKey: 'space' },
+    { id: 's1', x: 290, y: 265, color: '#FFD215', collected: false, name: 'Minor Daisy Bell', file: 'music/minorDaisyBell.mp3', imgKey: 'daisy', roomId: 'culinary' },
+    { id: 's2', x: 290, y: 835, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea', roomId: 'illustration' },
+    { id: 's3', x: 1110, y: 265, color: '#157BFF', collected: false, name: 'A Space Odyssey', file: 'music/aSpaceOdyssey.mp3', imgKey: 'space', roomId: 'design' },
 ];
 
 // ---- Mobile Joystick ----
 const joystick = {
-    active:  false,
+    active: false,
     touchId: null,
-    baseX:   80,   // fixed screen-space position
-    baseY:   0,    // set after canvas resize
-    stickX:  80,
-    stickY:  0,
-    BASE_R:  50,
+    baseX: 80,   // fixed screen-space position
+    baseY: 0,    // set after canvas resize
+    stickX: 80,
+    stickY: 0,
+    BASE_R: 50,
     STICK_R: 25,
 };
 
@@ -479,21 +502,21 @@ function buildWalls() {
     wallRects = [];
 
     // --- Outer lobby walls ---
-    const iceRoom  = ROOMS.find(r => r.id === 'iceCream');
-    const sDoorCx  = iceRoom.x + iceRoom.w / 2;
-    const sDoorL   = sDoorCx - DOOR_GAP / 2;
-    const sDoorR   = sDoorCx + DOOR_GAP / 2;
+    const iceRoom = ROOMS.find(r => r.id === 'iceCream');
+    const sDoorCx = iceRoom.x + iceRoom.w / 2;
+    const sDoorL = sDoorCx - DOOR_GAP / 2;
+    const sDoorR = sDoorCx + DOOR_GAP / 2;
 
     // Top wall — left segment
-    wallRects.push({ x: OB.left,  y: OB.top, w: sDoorL - OB.left, h: WALL_T });
+    wallRects.push({ x: OB.left, y: OB.top, w: sDoorL - OB.left, h: WALL_T });
     // Top wall — secret door segment (flagged so collision can be skipped when open)
     wallRects.push({ x: sDoorL, y: OB.top, w: DOOR_GAP, h: WALL_T, isSecretDoor: true });
     // Top wall — right segment
     wallRects.push({ x: sDoorR, y: OB.top, w: OB.right - sDoorR, h: WALL_T });
 
-    wallRects.push({ x: OB.left,  y: OB.bottom, w: OB.right - OB.left, h: WALL_T }); // bottom
-    wallRects.push({ x: OB.left,  y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }); // left
-    wallRects.push({ x: OB.right, y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }); // right
+    wallRects.push({ x: OB.left, y: OB.bottom, w: OB.right - OB.left, h: WALL_T }); // bottom
+    wallRects.push({ x: OB.left, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }); // left
+    wallRects.push({ x: OB.right, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }); // right
 
     // --- Ice cream counter — solid block ---
     const ice = ROOMS.find(r => r.solid);
@@ -513,10 +536,10 @@ function buildWalls() {
  */
 function addRoomWalls(room) {
     const { x, y, w, h, doorSide } = room;
-    const T  = WALL_T;
+    const T = WALL_T;
     const gapCx = room.doorGapCx !== undefined ? room.doorGapCx : x + w / 2;
-    const gapL  = gapCx - DOOR_GAP / 2;
-    const gapR  = gapCx + DOOR_GAP / 2;
+    const gapL = gapCx - DOOR_GAP / 2;
+    const gapR = gapCx + DOOR_GAP / 2;
 
     // Helper — push either a full wall or two half-walls with a gap
     const pushWall = (side) => {
@@ -524,14 +547,14 @@ function addRoomWalls(room) {
         if (side === 'top') {
             if (hasDoor) {
                 wallRects.push({ x: x - T, y: y - T, w: gapL - (x - T), h: T });
-                wallRects.push({ x: gapR,  y: y - T, w: (x + w + T) - gapR, h: T });
+                wallRects.push({ x: gapR, y: y - T, w: (x + w + T) - gapR, h: T });
             } else {
                 wallRects.push({ x: x - T, y: y - T, w: w + 2 * T, h: T });
             }
         } else if (side === 'bottom') {
             if (hasDoor) {
                 wallRects.push({ x: x - T, y: y + h, w: gapL - (x - T), h: T });
-                wallRects.push({ x: gapR,  y: y + h, w: (x + w + T) - gapR, h: T });
+                wallRects.push({ x: gapR, y: y + h, w: (x + w + T) - gapR, h: T });
             } else {
                 wallRects.push({ x: x - T, y: y + h, w: w + 2 * T, h: T });
             }
@@ -591,19 +614,19 @@ function resolveMove(newX, newY) {
 // ============================================================
 
 function startScene2() {
-    const sceneEl  = document.getElementById('scene-container');
+    const sceneEl = document.getElementById('scene-container');
     const bgCanvas = document.getElementById('bg-canvas');
-    const footer   = document.getElementById('copyright');
+    const footer = document.getElementById('copyright');
 
     // Fade out Scene 1 UI
     sceneEl.style.transition = 'opacity 1s ease';
-    sceneEl.style.opacity    = '0';
+    sceneEl.style.opacity = '0';
     bgCanvas.style.transition = 'opacity 1s ease';
-    bgCanvas.style.opacity    = '0';
+    bgCanvas.style.opacity = '0';
     if (footer) footer.style.transition = 'opacity 1s ease', footer.style.opacity = '0';
 
     setTimeout(() => {
-        sceneEl.style.display  = 'none';
+        sceneEl.style.display = 'none';
 
         // Show game canvas + song player widget
         gameCanvas2 = document.getElementById('game-canvas');
@@ -637,11 +660,12 @@ function initGame() {
 
     // Touch — joystick
     gameCanvas2.addEventListener('touchstart', onTouchStart, { passive: false });
-    gameCanvas2.addEventListener('touchmove',  onTouchMove,  { passive: false });
-    gameCanvas2.addEventListener('touchend',   onTouchEnd,   { passive: false });
+    gameCanvas2.addEventListener('touchmove', onTouchMove, { passive: false });
+    gameCanvas2.addEventListener('touchend', onTouchEnd, { passive: false });
 
     // Exhibit modal close button
     document.getElementById('exhibit-close-btn').addEventListener('click', closeModal);
+    document.getElementById('poem-close-btn').addEventListener('click', closeModal);
     // Click on interact hint to open on mobile
     document.getElementById('interact-hint').addEventListener('click', () => {
         if (nearestExhibit) openModal(nearestExhibit);
@@ -656,16 +680,16 @@ function initGame() {
 
 function resizeGame() {
     const dpr = window.devicePixelRatio || 1;
-    const vw  = window.innerWidth;
-    const vh  = window.innerHeight;
-    gameCanvas2.width  = vw * dpr;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    gameCanvas2.width = vw * dpr;
     gameCanvas2.height = vh * dpr;
-    gameCanvas2.style.width  = vw + 'px';
+    gameCanvas2.style.width = vw + 'px';
     gameCanvas2.style.height = vh + 'px';
     gCtx.scale(dpr, dpr);
 
     // Anchor joystick to bottom-left in screen space
-    joystick.baseY  = vh - 80;
+    joystick.baseY = vh - 80;
     joystick.stickY = joystick.baseY;
 }
 
@@ -692,10 +716,10 @@ function update() {
 
     // --- Movement input ---
     let dx = 0, dy = 0;
-    if (keys2['ArrowLeft']  || keys2['a'] || keys2['A']) dx -= PLAYER_SPEED;
+    if (keys2['ArrowLeft'] || keys2['a'] || keys2['A']) dx -= PLAYER_SPEED;
     if (keys2['ArrowRight'] || keys2['d'] || keys2['D']) dx += PLAYER_SPEED;
-    if (keys2['ArrowUp']    || keys2['w'] || keys2['W']) dy -= PLAYER_SPEED;
-    if (keys2['ArrowDown']  || keys2['s'] || keys2['S']) dy += PLAYER_SPEED;
+    if (keys2['ArrowUp'] || keys2['w'] || keys2['W']) dy -= PLAYER_SPEED;
+    if (keys2['ArrowDown'] || keys2['s'] || keys2['S']) dy += PLAYER_SPEED;
 
     // Joystick contribution
     if (joystick.active) {
@@ -733,7 +757,7 @@ function update() {
     for (const room of ROOMS) {
         if (room.solid) continue;
         room.entered = (player.x > room.x && player.x < room.x + room.w &&
-                        player.y > room.y && player.y < room.y + room.h);
+            player.y > room.y && player.y < room.y + room.h);
     }
 
     // --- Camera: centre on player, clamped to world bounds ---
@@ -766,8 +790,8 @@ function update() {
     }
 
     // Show or hide the interact hint
-    const hintEl   = document.getElementById('interact-hint');
-    const modalEl  = document.getElementById('exhibit-modal');
+    const hintEl = document.getElementById('interact-hint');
+    const modalEl = document.getElementById('exhibit-modal');
     const showHint = nearestExhibit && !modalEl.classList.contains('visible');
     hintEl.style.display = showHint ? 'block' : 'none';
 
@@ -795,14 +819,20 @@ function render() {
     const vh = window.innerHeight;
 
     // Clear with warm background
-    gCtx.fillStyle = '#FFFAE8';
-    gCtx.fillRect(0, 0, vw, vh);
+    gCtx.clearRect(0, 0, vw, vh);
 
     // Apply camera transform — everything in world space below
     gCtx.save();
     gCtx.translate(-camX, -camY);
 
-    drawLobbyFloor();
+    // Background image covers the full world
+    if (bgImage) {
+        gCtx.drawImage(bgImage, 0, 0, WORLD_W, WORLD_H);
+    } else {
+        gCtx.fillStyle = '#FFFAE8';
+        gCtx.fillRect(0, 0, WORLD_W, WORLD_H);
+    }
+
     ROOMS.forEach(drawRoom);
     drawOuterLobbyWalls();
     drawSecretDoorArea();
@@ -840,72 +870,24 @@ function drawLobbyFloor() {
 function drawRoom(room) {
     const { x, y, w, h, color } = room;
 
-    // ── Ice cream counter (solid obstacle) ──────────────────────────────────
-    if (room.solid) {
-        // Fill
-        gCtx.fillStyle = color;
-        gCtx.fillRect(x, y, w, h);
+    // ── Ice cream counter (solid obstacle) — transparent, no visual ─────────
+    if (room.solid) return;
 
-        // Border
-        gCtx.strokeStyle = '#444';
-        gCtx.lineWidth   = WALL_T;
-        gCtx.lineCap     = 'square';
-        gCtx.strokeRect(x + WALL_T/2, y + WALL_T/2, w - WALL_T, h - WALL_T);
-        return;
-    }
-
-    // ── Regular rooms ────────────────────────────────────────────────────────
-    const doorSide = room.doorSide;
-    const gapCx    = room.doorGapCx !== undefined ? room.doorGapCx : x + w / 2;
-    const gapL     = gapCx - DOOR_GAP / 2;
-    const gapR     = gapCx + DOOR_GAP / 2;
-
-    // Floor
-    gCtx.fillStyle = color;
-    gCtx.fillRect(x, y, w, h);
-
+    // ── Regular rooms — transparent walls, only opaque overlay when not entered
     if (!room.entered) {
-        // ── Opaque overlay: hide interior, show label ────────────────────────
+        // Opaque overlay: hide interior, show label
         gCtx.save();
-        gCtx.fillStyle = 'rgba(30, 25, 20, 0.45)';
+        gCtx.fillStyle = 'rgba(20, 18, 15, 0.52)';
         gCtx.fillRect(x, y, w, h);
         gCtx.restore();
 
-        gCtx.fillStyle     = 'rgba(255, 248, 235, 0.90)';
-        gCtx.font          = '600 24px Outfit, sans-serif';
-        gCtx.textAlign     = 'center';
+        gCtx.fillStyle = 'rgba(255, 248, 235, 0.92)';
+        gCtx.font = '600 24px Dream, sans-serif';
+        gCtx.textAlign = 'center';
         gCtx.letterSpacing = '3px';
         gCtx.fillText(room.label, x + w / 2, y + h / 2 + 9);
         gCtx.letterSpacing = '0px';
-    } else {
-        // ── Revealed interior: doormat hint ─────────────────────────────────
-        gCtx.fillStyle = 'rgba(190, 165, 140, 0.35)';
-        if (doorSide === 'bottom') gCtx.fillRect(gapL, y + h - 4, DOOR_GAP, 14);
-        else                        gCtx.fillRect(gapL, y - 10,    DOOR_GAP, 14);
     }
-
-    // ── Walls (always drawn on top) ──────────────────────────────────────────
-    gCtx.strokeStyle = '#333';
-    gCtx.lineWidth   = WALL_T;
-    gCtx.lineCap     = 'square';
-
-    // Top wall
-    if (doorSide === 'top') {
-        seg(x - WALL_T/2, y, gapL, y);
-        seg(gapR, y, x + w + WALL_T/2, y);
-    } else {
-        seg(x - WALL_T/2, y, x + w + WALL_T/2, y);
-    }
-    // Bottom wall
-    if (doorSide === 'bottom') {
-        seg(x - WALL_T/2, y + h, gapL, y + h);
-        seg(gapR, y + h, x + w + WALL_T/2, y + h);
-    } else {
-        seg(x - WALL_T/2, y + h, x + w + WALL_T/2, y + h);
-    }
-    // Side walls
-    seg(x,     y - WALL_T/2, x,     y + h + WALL_T/2);
-    seg(x + w, y - WALL_T/2, x + w, y + h + WALL_T/2);
 }
 
 /**
@@ -913,29 +895,7 @@ function drawRoom(room) {
  * The top wall includes the secret-door gap.
  */
 function drawOuterLobbyWalls() {
-    gCtx.lineWidth = WALL_T * 1.5;
-    gCtx.lineCap   = 'square';
-
-    const iceRoom = ROOMS.find(r => r.id === 'iceCream');
-    const sDCx    = iceRoom.x + iceRoom.w / 2;
-    const sDL     = sDCx - DOOR_GAP / 2;
-    const sDR     = sDCx + DOOR_GAP / 2;
-
-    // Top wall (split for secret door)
-    gCtx.strokeStyle = '#222';
-    seg(OB.left, OB.top, sDL, OB.top);
-    seg(sDR, OB.top, OB.right, OB.top);
-
-    // Locked door segment
-    if (!secretDoorOpen) {
-        gCtx.strokeStyle = '#996633';
-        seg(sDL, OB.top, sDR, OB.top);
-    }
-
-    gCtx.strokeStyle = '#222';
-    seg(OB.left,  OB.bottom, OB.right, OB.bottom); // bottom
-    seg(OB.left,  OB.top,    OB.left,  OB.bottom); // left
-    seg(OB.right, OB.top,    OB.right, OB.bottom); // right
+    // Walls are transparent — collision is handled by wallRects, not visuals
 }
 
 /**
@@ -943,30 +903,30 @@ function drawOuterLobbyWalls() {
  */
 function drawSecretDoorArea() {
     const iceRoom = ROOMS.find(r => r.id === 'iceCream');
-    const sDCx    = iceRoom.x + iceRoom.w / 2;
-    const sDL     = sDCx - DOOR_GAP / 2;
+    const sDCx = iceRoom.x + iceRoom.w / 2;
+    const sDL = sDCx - DOOR_GAP / 2;
 
     if (secretDoorOpen) {
         // Golden glow over the open gap
         gCtx.save();
-        gCtx.shadowBlur   = 24;
-        gCtx.shadowColor  = '#FFD215';
-        gCtx.fillStyle    = 'rgba(255, 210, 21, 0.4)';
+        gCtx.shadowBlur = 24;
+        gCtx.shadowColor = '#FFD215';
+        gCtx.fillStyle = 'rgba(255, 210, 21, 0.4)';
         gCtx.fillRect(sDL, OB.top - 6, DOOR_GAP, 16);
         gCtx.restore();
 
-        gCtx.fillStyle  = '#B8860B';
-        gCtx.font       = '600 11px Outfit, sans-serif';
-        gCtx.textAlign  = 'center';
+        gCtx.fillStyle = '#B8860B';
+        gCtx.font = '600 11px Dream, sans-serif';
+        gCtx.textAlign = 'center';
         gCtx.fillText('✨ SECRET', sDCx, OB.top - 8);
     } else {
         // Lock icon + progress label
-        gCtx.font      = '14px sans-serif';
+        gCtx.font = '14px sans-serif';
         gCtx.textAlign = 'center';
         gCtx.fillText('🔒', sDCx, OB.top + 8);
 
         gCtx.fillStyle = 'rgba(140,120,100,0.8)';
-        gCtx.font      = '11px Outfit, sans-serif';
+        gCtx.font = '11px Dream, sans-serif';
         gCtx.fillText(`${songsCollected}/3 songs`, sDCx, OB.top - 2);
     }
 }
@@ -975,26 +935,27 @@ function drawSecretDoorArea() {
  * Draw a collectible song pickup (music note in a glowing circle).
  */
 function drawSong(song) {
-    gCtx.save();
-    gCtx.shadowBlur  = 14;
-    gCtx.shadowColor = song.color;
+    // Hide if the song is inside a room the player hasn't entered
+    if (song.roomId) {
+        const parentRoom = ROOMS.find(r => r.id === song.roomId);
+        if (parentRoom && !parentRoom.entered) return;
+    }
 
-    gCtx.beginPath();
-    gCtx.arc(song.x, song.y, SONG_RADIUS, 0, Math.PI * 2);
-    gCtx.fillStyle = song.color;
-    gCtx.fill();
-
-    gCtx.shadowBlur = 0;
-    // Draw the song's image inside the circle, fall back to ♪ if not loaded
     const songImg = SONG_IMAGES[song.imgKey];
+    const sz = SONG_RADIUS * 2;
+
+    gCtx.save();
+    // Yellow glow around the image shape (no filled circle)
+    gCtx.shadowBlur  = 22;
+    gCtx.shadowColor = '#FFD215';
     if (songImg && songImg.complete && songImg.naturalWidth > 0) {
-        const sz = SONG_RADIUS * 1.2;
         gCtx.drawImage(songImg, song.x - sz / 2, song.y - sz / 2, sz, sz);
     } else {
-        gCtx.fillStyle      = 'white';
-        gCtx.font           = 'bold 17px sans-serif';
-        gCtx.textAlign      = 'center';
-        gCtx.textBaseline   = 'middle';
+        // Fallback: plain ♪ with glow
+        gCtx.fillStyle    = '#FFD215';
+        gCtx.font         = `bold ${SONG_RADIUS}px sans-serif`;
+        gCtx.textAlign    = 'center';
+        gCtx.textBaseline = 'middle';
         gCtx.fillText('♪', song.x, song.y);
         gCtx.textBaseline = 'alphabetic';
     }
@@ -1011,8 +972,8 @@ function drawEyeIcon(cx, cy) {
     const ew = 16, eh = 10;
     gCtx.save();
     gCtx.strokeStyle = '#157BFF';
-    gCtx.fillStyle   = '#157BFF';
-    gCtx.lineWidth   = 1.8;
+    gCtx.fillStyle = '#157BFF';
+    gCtx.lineWidth = 1.8;
 
     // Eye outline (oval)
     gCtx.beginPath();
@@ -1034,9 +995,9 @@ function drawEyeIcon(cx, cy) {
 }
 
 /**
- * Draw a framed exhibit on the wall.
- * Hidden until the player has entered the room.
- * Shows a canvas-drawn eye icon when the player is close enough to interact.
+ * Draw an exhibit on the wall — frameless ice cream image.
+ * Hidden while the player is outside the room.
+ * Shows a paw icon when the player is close enough to interact.
  */
 function drawExhibit(ex) {
     const parentRoom = ROOMS.find(r => r.id === ex.roomId);
@@ -1045,34 +1006,19 @@ function drawExhibit(ex) {
     const hw = EXHIBIT_W / 2;
     const hh = EXHIBIT_H / 2;
 
-    // Outer frame
-    gCtx.fillStyle   = comingSoon ? '#E8E8E8' : '#FDFDF8';
-    gCtx.strokeStyle = comingSoon ? '#AAAAAA' : '#444';
-    gCtx.lineWidth   = 2.5;
-    gCtx.fillRect  (x - hw,     y - hh,     EXHIBIT_W,     EXHIBIT_H);
-    gCtx.strokeRect(x - hw,     y - hh,     EXHIBIT_W,     EXHIBIT_H);
-
-    // Inner matte line
-    gCtx.strokeStyle = comingSoon ? '#CCC' : '#AAA';
-    gCtx.lineWidth   = 1;
-    gCtx.strokeRect(x - hw + 4, y - hh + 4, EXHIBIT_W - 8, EXHIBIT_H - 8);
-
-    // Artwork fill
     if (comingSoon) {
-        gCtx.fillStyle    = '#CCC';
-        gCtx.font         = '12px sans-serif';
-        gCtx.textAlign    = 'center';
+        gCtx.fillStyle = 'rgba(180,180,180,0.5)';
+        gCtx.fillRect(x - hw, y - hh, EXHIBIT_W, EXHIBIT_H);
+        gCtx.fillStyle = '#888';
+        gCtx.font = '14px sans-serif';
+        gCtx.textAlign = 'center';
         gCtx.textBaseline = 'middle';
         gCtx.fillText('?', x, y);
         gCtx.textBaseline = 'alphabetic';
     } else {
-        // Draw the assigned ice cream image inside the frame, or fall back to parchment
         const iceImg = ICE_IMAGES[ex.iceImgIdx];
         if (iceImg && iceImg.complete && iceImg.naturalWidth > 0) {
-            gCtx.drawImage(iceImg, x - hw + 6, y - hh + 6, EXHIBIT_W - 12, EXHIBIT_H - 12);
-        } else {
-            gCtx.fillStyle = '#EDE0C4';
-            gCtx.fillRect(x - hw + 6, y - hh + 6, EXHIBIT_W - 12, EXHIBIT_H - 12);
+            gCtx.drawImage(iceImg, x - hw, y - hh, EXHIBIT_W, EXHIBIT_H);
         }
     }
 
@@ -1116,7 +1062,7 @@ function drawPlayer() {
         const sw = R * 3.5;
         const sh = R * 3.5;
         gCtx.save();
-        gCtx.shadowBlur  = 10;
+        gCtx.shadowBlur = 10;
         gCtx.shadowColor = 'rgba(0,0,0,0.15)';
         gCtx.drawImage(sprite, x - sw / 2, y - sh / 2, sw, sh);
         gCtx.restore();
@@ -1128,16 +1074,16 @@ function drawPlayer() {
     gCtx.save();
 
     // Shadow
-    gCtx.shadowBlur  = 10;
+    gCtx.shadowBlur = 10;
     gCtx.shadowColor = 'rgba(0,0,0,0.15)';
 
     // Body
     gCtx.beginPath();
     gCtx.arc(x, y, R, 0, Math.PI * 2);
-    gCtx.fillStyle   = '#D4A574';
+    gCtx.fillStyle = '#D4A574';
     gCtx.fill();
     gCtx.strokeStyle = '#8B5E3C';
-    gCtx.lineWidth   = 2;
+    gCtx.lineWidth = 2;
     gCtx.stroke();
 
     gCtx.shadowBlur = 0;
@@ -1187,7 +1133,7 @@ function drawPlayer() {
     // Nose (small triangle)
     gCtx.fillStyle = '#D46060';
     gCtx.beginPath();
-    gCtx.moveTo(x,     y + 2);
+    gCtx.moveTo(x, y + 2);
     gCtx.lineTo(x - 3, y + 7);
     gCtx.lineTo(x + 3, y + 7);
     gCtx.closePath();
@@ -1212,7 +1158,7 @@ function drawJoystick() {
     gCtx.beginPath();
     gCtx.arc(baseX, baseY, BASE_R, 0, Math.PI * 2);
     gCtx.strokeStyle = '#444';
-    gCtx.lineWidth   = 3;
+    gCtx.lineWidth = 3;
     gCtx.stroke();
 
     // Stick
@@ -1237,10 +1183,10 @@ function onTouchStart(e) {
             const tx = touch.clientX;
             const ty = touch.clientY;
             if (Math.hypot(tx - joystick.baseX, ty - joystick.baseY) < joystick.BASE_R * 2.5) {
-                joystick.active  = true;
+                joystick.active = true;
                 joystick.touchId = touch.identifier;
-                joystick.stickX  = tx;
-                joystick.stickY  = ty;
+                joystick.stickX = tx;
+                joystick.stickY = ty;
             }
         }
     }
@@ -1250,10 +1196,10 @@ function onTouchMove(e) {
     e.preventDefault();
     for (const touch of e.changedTouches) {
         if (touch.identifier !== joystick.touchId) continue;
-        const tx  = touch.clientX;
-        const ty  = touch.clientY;
-        const dx  = tx - joystick.baseX;
-        const dy  = ty - joystick.baseY;
+        const tx = touch.clientX;
+        const ty = touch.clientY;
+        const dx = tx - joystick.baseX;
+        const dy = ty - joystick.baseY;
         const len = Math.sqrt(dx * dx + dy * dy);
         if (len > joystick.BASE_R) {
             joystick.stickX = joystick.baseX + dx * joystick.BASE_R / len;
@@ -1268,10 +1214,10 @@ function onTouchMove(e) {
 function onTouchEnd(e) {
     for (const touch of e.changedTouches) {
         if (touch.identifier === joystick.touchId) {
-            joystick.active  = false;
+            joystick.active = false;
             joystick.touchId = null;
-            joystick.stickX  = joystick.baseX;
-            joystick.stickY  = joystick.baseY;
+            joystick.stickX = joystick.baseX;
+            joystick.stickY = joystick.baseY;
         }
     }
 }
@@ -1282,16 +1228,24 @@ function onTouchEnd(e) {
 // ============================================================
 
 function openModal(exhibit) {
-    document.getElementById('exhibit-modal-title').textContent = exhibit.label;
-    document.getElementById('exhibit-modal-desc').textContent  =
-        exhibit.comingSoon
-            ? 'This exhibit is being prepared with love. Check back soon! 🐾'
-            : 'Description coming soon.';
-    document.getElementById('exhibit-modal').classList.add('visible');
+    if (exhibit.poem) {
+        // Show dedicated poem page
+        document.getElementById('poem-numeral').textContent = exhibit.label;
+        document.getElementById('poem-body').textContent = exhibit.poem;
+        document.getElementById('poem-modal').classList.add('visible');
+    } else {
+        document.getElementById('exhibit-modal-title').textContent = exhibit.label;
+        document.getElementById('exhibit-modal-desc').textContent =
+            exhibit.comingSoon
+                ? 'This exhibit is being prepared with love. Check back soon! 🐾'
+                : 'Description coming soon.';
+        document.getElementById('exhibit-modal').classList.add('visible');
+    }
 }
 
 function closeModal() {
     document.getElementById('exhibit-modal').classList.remove('visible');
+    document.getElementById('poem-modal').classList.remove('visible');
 }
 
 
@@ -1310,7 +1264,7 @@ function playSong(song) {
     }
 
     currentAudio = new Audio(song.file);
-    currentAudio.loop   = false;
+    currentAudio.loop = false;
     currentAudio.volume = 0.7;
 
     currentSongIdx = collectedSongs.indexOf(song);
@@ -1338,7 +1292,18 @@ function playSong(song) {
  * Switch to a specific collected song (called from dropdown click).
  */
 function switchToSong(song) {
-    playSong(song);
+    const isCurrentSong = currentSongIdx === collectedSongs.indexOf(song);
+    if (isCurrentSong && currentAudio) {
+        // Toggle pause / resume
+        if (currentAudio.paused || currentAudio.ended) {
+            currentAudio.play().catch(() => { });
+        } else {
+            currentAudio.pause();
+        }
+        rebuildDropdown();
+    } else {
+        playSong(song);
+    }
 }
 
 /**
@@ -1356,8 +1321,9 @@ function rebuildDropdown() {
 
         if (song.collected) {
             const isCurrentSong = currentSongIdx === collectedSongs.indexOf(song);
+            const isPaused = isCurrentSong && currentAudio && currentAudio.paused;
             item.textContent = song.name;
-            if (isCurrentSong) item.classList.add('playing');
+            if (isCurrentSong) item.classList.add(isPaused ? 'paused' : 'playing');
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 switchToSong(song);
@@ -1376,7 +1342,7 @@ function rebuildDropdown() {
  */
 function initSongPlayer() {
     const vinylWrapper = document.getElementById('vinyl-wrapper');
-    const dropdown     = document.getElementById('song-dropdown');
+    const dropdown = document.getElementById('song-dropdown');
 
     // Toggle dropdown on vinyl click
     vinylWrapper.addEventListener('click', (e) => {
@@ -1402,8 +1368,8 @@ function initSongPlayer() {
 
 function showToast(text) {
     const el = document.getElementById('song-popup');
-    el.textContent    = text;
-    el.style.display  = 'block';
+    el.textContent = text;
+    el.style.display = 'block';
     // Restart animation by forcing reflow
     void el.offsetWidth;
     el.style.animation = 'none';
