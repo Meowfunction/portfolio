@@ -452,26 +452,26 @@ const EXHIBITS = [
     { id: 'd2', roomId: 'design', label: 'UI System', x: 1080, y: 115, imgSrc: 'rooms/design/FoxtailVase.png' },
     { id: 'd3', roomId: 'design', label: 'Poster Series', x: 1240, y: 115, imgSrc: 'rooms/design/GoldenRatio.png' },
     { id: 'd4', roomId: 'design', label: 'Typography', x: 1310, y: 240, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
-    // Illustration (x: 55–525, y: 650–1020) — top wall & left wall
-    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit', x: 140, y: 685, imgSrc: 'rooms/illustration/BriefSpring.png' },
-    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat', x: 250, y: 685, imgSrc: 'rooms/illustration/ImBach.GIF' },
-    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer', x: 410, y: 685, imgSrc: 'rooms/illustration/Neowsletter.png' },
-    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes', x: 90, y: 810, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
-    // Poetry    (x: 875–1345, y: 650–1020) — four poems on the walls
+    // Illustration (x: 55–525, y: 650–1020) — bottom wall
+    { id: 'i1', roomId: 'illustration', label: 'Forest Spirit',  x: 120, y: 988, imgSrc: 'rooms/illustration/BriefSpring.png' },
+    { id: 'i2', roomId: 'illustration', label: 'Starlight Cat',  x: 220, y: 988, imgSrc: 'rooms/illustration/ImBach.GIF' },
+    { id: 'i3', roomId: 'illustration', label: 'Ocean Dreamer',  x: 340, y: 988, imgSrc: 'rooms/illustration/Neowsletter.png' },
+    { id: 'i4', roomId: 'illustration', label: 'Paper Cranes',   x: 460, y: 988, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
+    // Poetry    (x: 875–1345, y: 650–1020) — bottom wall
     {
-        id: 'p1', roomId: 'poetry', label: 'I', x: 960, y: 685, iceImgIdx: 0,
+        id: 'p1', roomId: 'poetry', label: 'I', x: 950, y: 988, iceImgIdx: 0,
         poem: "Today I shall die.\nPlease with\nDandelions,\nWith dandelions fill,\nFill them please!\nDandelions,\nWithin\nMy grave.\nA soft bed\nLaden with\nSoft dreams."
     },
     {
-        id: 'p2', roomId: 'poetry', label: 'II', x: 1080, y: 685, iceImgIdx: 1,
+        id: 'p2', roomId: 'poetry', label: 'II', x: 1070, y: 988, iceImgIdx: 1,
         poem: "A face of clay.\nPinched, pulled, punched, pummeled-\nIs it but the toil of reform?\nHah!\nInborn in my body is\nA seed of ill omen.\n\nThe blaze of hope.\nScathed, scorched, singed, seared-\nHas it ushered in a pristine rebirth?\nNay!\nWhen the fruit breaks it's the life\nFlashing before one's eyes."
     },
     {
-        id: 'p3', roomId: 'poetry', label: 'III', x: 1210, y: 685, iceImgIdx: 2,
+        id: 'p3', roomId: 'poetry', label: 'III', x: 1190, y: 988, iceImgIdx: 2,
         poem: "In the subway I sat on\nA seat between\nSeats.\nI leaned forward and saw the compartments\nA tunnel of\nPeople, their waves.\nNo one was talking so the\nSilence stretched my loneliness.\nBut I realized that\nLoneliness is everyone's\nOpen secret."
     },
     {
-        id: 'p4', roomId: 'poetry', label: 'IV', x: 1310, y: 790, iceImgIdx: 3,
+        id: 'p4', roomId: 'poetry', label: 'IV', x: 1310, y: 988, iceImgIdx: 3,
         poem: "Looking up at an osmanthus tree:\nYou must love me, or\nFluttering down those sweet\nKisses,\nWhy are they chasing me?"
     },
 ];
@@ -494,6 +494,10 @@ const SONGS = [
     { id: 's2', x: 290, y: 835, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea', roomId: 'illustration' },
     { id: 's3', x: 1110, y: 265, color: '#157BFF', collected: false, name: 'A Space Odyssey', file: 'music/aSpaceOdyssey.mp3', imgKey: 'space', roomId: 'design' },
 ];
+
+// ---- Tap tracking (for paw-icon inspect on mobile) ----
+let tapTouchId = null;
+let tapStartX = 0, tapStartY = 0;
 
 // ---- Mobile Joystick ----
 const joystick = {
@@ -539,6 +543,12 @@ function buildWalls() {
     const ice = ROOMS.find(r => r.solid);
     if (ice) {
         wallRects.push({ x: ice.x, y: ice.y, w: ice.w, h: ice.h });
+    }
+
+    // --- Exhibit icons — impassable icons on room walls ---
+    for (const ex of EXHIBITS) {
+        if (ex.comingSoon) continue;
+        wallRects.push({ x: ex.x - EXHIBIT_W / 2, y: ex.y - EXHIBIT_H / 2, w: EXHIBIT_W, h: EXHIBIT_H });
     }
 
     // --- Room walls (non-solid only) ---
@@ -920,10 +930,19 @@ function drawRoom(room) {
         gCtx.fillStyle = color;
         gCtx.fillRect(x, y, w, h);
 
-        // Doormat hint at entrance
+        // Interior doormat at the entrance gap
         gCtx.fillStyle = 'rgba(190, 165, 140, 0.35)';
         if (doorSide === 'bottom') gCtx.fillRect(gapL, y + h - 4, DOOR_GAP, 14);
         else gCtx.fillRect(gapL, y - 10, DOOR_GAP, 14);
+    }
+
+    // Exterior doormat — always shown outside the entrance to indicate the gate
+    gCtx.fillStyle = 'rgba(140, 135, 130, 0.28)';
+    if (doorSide === 'bottom') {
+        gCtx.fillRect(gapL, y + h + 2, DOOR_GAP, 12);
+    } else {
+        // doorSide === 'top'
+        gCtx.fillRect(gapL, y - 14, DOOR_GAP, 12);
     }
     // No border strokes — borders are transparent
 }
@@ -1218,15 +1237,18 @@ function drawJoystick() {
 function onTouchStart(e) {
     e.preventDefault();
     for (const touch of e.changedTouches) {
-        if (!joystick.active) {
-            const tx = touch.clientX;
-            const ty = touch.clientY;
-            if (Math.hypot(tx - joystick.baseX, ty - joystick.baseY) < joystick.BASE_R * 2.5) {
-                joystick.active = true;
-                joystick.touchId = touch.identifier;
-                joystick.stickX = tx;
-                joystick.stickY = ty;
-            }
+        const tx = touch.clientX;
+        const ty = touch.clientY;
+        if (!joystick.active && Math.hypot(tx - joystick.baseX, ty - joystick.baseY) < joystick.BASE_R * 2.5) {
+            joystick.active = true;
+            joystick.touchId = touch.identifier;
+            joystick.stickX = tx;
+            joystick.stickY = ty;
+        } else if (tapTouchId === null) {
+            // Track as a potential tap for paw-icon inspect
+            tapTouchId = touch.identifier;
+            tapStartX = tx;
+            tapStartY = ty;
         }
     }
 }
@@ -1257,6 +1279,27 @@ function onTouchEnd(e) {
             joystick.touchId = null;
             joystick.stickX = joystick.baseX;
             joystick.stickY = joystick.baseY;
+        }
+        if (touch.identifier === tapTouchId) {
+            tapTouchId = null;
+            const moveDist = Math.hypot(touch.clientX - tapStartX, touch.clientY - tapStartY);
+            if (moveDist < 18) {
+                // Short tap — check if it lands on a paw icon (world-space hit)
+                const worldX = touch.clientX + camX;
+                const worldY = touch.clientY + camY;
+                // Paw icon is drawn at (ex.x, ex.y - EXHIBIT_H/2 - ph/2 - 4) ≈ (ex.x, ex.y - 39)
+                const PAW_HIT_R = 36;
+                for (const ex of EXHIBITS) {
+                    const dist = Math.hypot(player.x - ex.x, player.y - ex.y);
+                    if (dist >= EXHIBIT_DIST) continue; // paw only visible when in range
+                    const pawCx = ex.x;
+                    const pawCy = ex.y - EXHIBIT_H / 2 - 14;
+                    if (Math.hypot(worldX - pawCx, worldY - pawCy) < PAW_HIT_R) {
+                        openModal(ex);
+                        break;
+                    }
+                }
+            }
         }
     }
 }
