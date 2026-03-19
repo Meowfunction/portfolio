@@ -342,11 +342,17 @@ let camX = 0, camY = 0;
 // dir: facing direction used for sprite selection ('left'|'right'|'up'|'down')
 const player = { x: 700, y: 555, dir: 'down' };
 
-// ---- Player Sprites (loaded on demand; filename convention: images/player_<dir>.png) ----
+// ---- Player Sprites (loaded on demand; avatar/ folder) ----
 const playerSprites = { left: null, right: null, up: null, down: null };
-['left', 'right', 'up', 'down'].forEach(dir => {
+const SPRITE_PATHS = {
+    left:  'avatar/left.PNG',
+    right: 'avatar/right.PNG',
+    up:    'avatar/back.PNG',
+    down:  'avatar/front.PNG',
+};
+Object.entries(SPRITE_PATHS).forEach(([dir, path]) => {
     const img = new Image();
-    img.src = `images/player_${dir}.png`;
+    img.src = path;
     img.onload  = () => { playerSprites[dir] = img; };
     img.onerror = () => { /* silently fall back to drawn cat */ };
 });
