@@ -1510,9 +1510,10 @@ const CAT_LINES = [
     "Leave me alone, or I'll\nhaunt you at night!",
     "Zzz..."
 ];
-let catDialogueIdx = 0;   // next line to show
-let catBubbleLine  = -1;  // line currently displayed (-1 = hidden)
-let catBubbleTimer = 0;   // frames remaining
+let catDialogueIdx  = 0;   // next line to show
+let catBubbleLine   = -1;  // line currently displayed (-1 = hidden)
+let catBubbleTimer  = 0;   // frames remaining
+let catRevealIdx    = 0;   // how many chars of the current line have been revealed
 const catNpcImg = new Image();
 catNpcImg.src = 'images/catSleep.png';
 const scene3Stars = [];
@@ -1675,43 +1676,61 @@ function updateScene3Movement() {
 function drawCatNPC() {
     const cx = OB.left + 160, cy = OB.top + 210;
     // Cat image
+    gCtx.save();
+    gCtx.shadowBlur = 0; // ensure star shadows don't bleed
     if (catNpcImg.complete && catNpcImg.naturalWidth > 0) {
         gCtx.drawImage(catNpcImg, cx - CAT_NPC_W / 2, cy - CAT_NPC_H / 2, CAT_NPC_W, CAT_NPC_H);
     }
+    gCtx.restore();
+
     // Speech bubble
     if (catBubbleTimer > 0 && catBubbleLine >= 0) {
         catBubbleTimer--;
-        const lines = CAT_LINES[catBubbleLine].split('\n');
-        const fSize = 13;
-        gCtx.font = `${fSize}px Arial, Helvetica, sans-serif`;
-        const lineH = fSize + 5;
-        const maxW = lines.reduce((m, l) => Math.max(m, gCtx.measureText(l).width), 0);
-        const padX = 12, padY = 9;
-        const bw = maxW + padX * 2;
-        const bh = lines.length * lineH + padY * 2;
-        const bx = cx - bw / 2;
-        const by = cy - CAT_NPC_H / 2 - bh - 14;
-        // Bubble background
+
+        // Advance typewriter — one char every 2 frames
+        const fullText = CAT_LINES[catBubbleLine];
+        if (catRevealIdx < fullText.length && catBubbleTimer % 2 === 0) catRevealIdx++;
+
+        const fSize = 15;
         gCtx.save();
-        gCtx.fillStyle = 'rgba(255,255,255,0.93)';
-        gCtx.strokeStyle = 'rgba(180,180,180,0.7)';
+        gCtx.shadowBlur = 0;
+        gCtx.font = `${fSize}px Dream, sans-serif`;
+
+        // Measure bubble size from FULL text so it doesn't resize as text appears
+        const allLines = fullText.split('\n');
+        const lineH = fSize + 7;
+        const maxW = allLines.reduce((m, l) => Math.max(m, gCtx.measureText(l).width), 0);
+        const padX = 14, padY = 10;
+        const bw = maxW + padX * 2;
+        const bh = allLines.length * lineH + padY * 2;
+        const bx = cx - bw / 2;
+        const by = cy - CAT_NPC_H / 2 - bh - 16;
+
+        // Bubble background
+        gCtx.fillStyle = 'rgba(255,255,255,0.95)';
+        gCtx.strokeStyle = 'rgba(160,160,160,0.6)';
         gCtx.lineWidth = 1.2;
         gCtx.beginPath();
-        gCtx.roundRect(bx, by, bw, bh, 8);
+        gCtx.roundRect(bx, by, bw, bh, 10);
         gCtx.fill(); gCtx.stroke();
-        // Tail triangle pointing down toward cat
+
+        // Tail triangle
         gCtx.beginPath();
-        gCtx.moveTo(cx - 7, by + bh);
-        gCtx.lineTo(cx + 7, by + bh);
-        gCtx.lineTo(cx, by + bh + 12);
+        gCtx.moveTo(cx - 8, by + bh);
+        gCtx.lineTo(cx + 8, by + bh);
+        gCtx.lineTo(cx, by + bh + 13);
         gCtx.closePath();
-        gCtx.fillStyle = 'rgba(255,255,255,0.93)';
+        gCtx.fillStyle = 'rgba(255,255,255,0.95)';
         gCtx.fill();
-        // Text
+
+        // Typewriter text — reveal char by char across lines
+        const revealed = fullText.substring(0, catRevealIdx);
+        const revealedLines = revealed.split('\n');
         gCtx.fillStyle = '#222';
         gCtx.textAlign = 'center';
         gCtx.textBaseline = 'top';
-        lines.forEach((l, i) => gCtx.fillText(l, cx, by + padY + i * lineH));
+        revealedLines.forEach((l, i) => gCtx.fillText(l, cx, by + padY + i * lineH));
+
         gCtx.restore();
     }
 }
@@ -1723,6 +1742,7 @@ function tappedCat(screenX, screenY) {
     catBubbleLine  = catDialogueIdx;
     catDialogueIdx = (catDialogueIdx + 1) % CAT_LINES.length;
     catBubbleTimer = 320; // ~5 s at 60 fps
+    catRevealIdx   = 0;   // restart typewriter
 }
 
 // ---- Render ----
@@ -1732,13 +1752,17 @@ function renderScene3() {
     const vw = window.innerWidth, vh = window.innerHeight;
     const RETURN_BAR_H = 52;
 
-    if (canvas.width !== vw || canvas.height !== vh) {
-        canvas.width = vw; canvas.height = vh;
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== vw * dpr || canvas.height !== vh * dpr) {
+        canvas.width = vw * dpr; canvas.height = vh * dpr;
     }
 
     // Temporarily route all draw calls through s3Ctx
     const prevCtx = gCtx;
     gCtx = s3Ctx;
+
+    // Apply DPR scale so all coordinates stay in logical (CSS) pixels
+    gCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     // Black background (screen space)
     gCtx.fillStyle = '#000';
