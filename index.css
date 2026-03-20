@@ -309,7 +309,20 @@ body {
     display: none;
     z-index: 10;
     cursor: default;
-    touch-action: none; /* prevent default scroll/zoom during game */
+    touch-action: none;
+}
+
+/* Scene 3 Star Field Canvas */
+#scene3-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    z-index: 20;
+    cursor: default;
+    touch-action: none;
 }
 
 /* ---- Song Player Widget: vinyl disk + dropdown (top-right) ---- */

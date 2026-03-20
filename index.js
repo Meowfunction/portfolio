@@ -327,6 +327,9 @@ const SONG_DIST = 30;     // collection trigger distance
 // ---- Outer boundary constants ----
 const OB = { left: 50, right: 1350, top: 70, bottom: 1080 };
 
+// ---- Secret door: fixed center X (world coords) ----
+const SECRET_DOOR_CX = 700;
+
 // ---- Game Runtime State ----
 let gameCanvas2 = null;  // renamed to avoid clash with bg-canvas `canvas`
 let gCtx = null;
@@ -373,12 +376,6 @@ const _bgImg = new Image();
 _bgImg.src = 'images/background.png';
 _bgImg.onload = () => { bgImage = _bgImg; };
 
-// ---- Ice cream cat image (preloaded) ----
-let iceCatImage = null;
-const _iceCatImg = new Image();
-_iceCatImg.src = 'images/catIce.png';
-_iceCatImg.onload = () => { iceCatImage = _iceCatImg; };
-
 // ---- Ice cream exhibit frame images (ice_cream/ice1–6.PNG, randomised per exhibit) ----
 const ICE_IMAGES = Array.from({ length: 6 }, (_, i) => {
     const img = new Image();
@@ -393,13 +390,6 @@ const SONG_IMAGES = {};
     img.src = src;
     SONG_IMAGES[key] = img;
 });
-
-// ---- Paw icon image (shown near exhibits instead of eye) ----
-let pawImage = null;
-const _pawImg = new Image();
-_pawImg.src = 'images/paw.PNG';
-_pawImg.onload = () => { pawImage = _pawImg; };
-_pawImg.onerror = () => { /* silently fall back to eye */ };
 
 // ---- Audio player state ----
 let collectedSongs = [];    // ordered list of collected song objects
@@ -419,10 +409,6 @@ const ROOMS = [
     {
         id: 'culinary', label: 'culinary', x: 130, y: 90, w: 470, h: 370,
         color: '#FFF3DC', opaqueColor: '#FFD366', doorSide: 'bottom', doorGapCx: 130 + 470 * 0.78, entered: false
-    },
-    {
-        id: 'iceCream', label: 'Ice Cream', x: 600, y: 200, w: 200, h: 185,
-        color: '#E8F6FF', solid: true
     },
     {
         id: 'design', label: 'design room', x: 800, y: 90, w: 470, h: 370,
@@ -523,10 +509,8 @@ function buildWalls() {
     wallRects = [];
 
     // --- Outer lobby walls ---
-    const iceRoom = ROOMS.find(r => r.id === 'iceCream');
-    const sDoorCx = iceRoom.x + iceRoom.w / 2;
-    const sDoorL = sDoorCx - DOOR_GAP / 2;
-    const sDoorR = sDoorCx + DOOR_GAP / 2;
+    const sDoorL = SECRET_DOOR_CX - DOOR_GAP / 2;
+    const sDoorR = SECRET_DOOR_CX + DOOR_GAP / 2;
 
     // Top wall — left segment
     wallRects.push({ x: OB.left, y: OB.top, w: sDoorL - OB.left, h: WALL_T });
@@ -538,12 +522,6 @@ function buildWalls() {
     wallRects.push({ x: OB.left, y: OB.bottom, w: OB.right - OB.left, h: WALL_T }); // bottom
     wallRects.push({ x: OB.left, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }); // left
     wallRects.push({ x: OB.right, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }); // right
-
-    // --- Ice cream counter — solid block ---
-    const ice = ROOMS.find(r => r.solid);
-    if (ice) {
-        wallRects.push({ x: ice.x, y: ice.y, w: ice.w, h: ice.h });
-    }
 
     // --- Exhibit icons — impassable icons on room walls ---
     for (const ex of EXHIBITS) {
@@ -685,10 +663,30 @@ function initGame() {
     });
     window.addEventListener('keyup', e => { keys2[e.key] = false; });
 
-    // Touch — joystick
+    // Touch — joystick + tap inspect
     gameCanvas2.addEventListener('touchstart', onTouchStart, { passive: false });
     gameCanvas2.addEventListener('touchmove', onTouchMove, { passive: false });
     gameCanvas2.addEventListener('touchend', onTouchEnd, { passive: false });
+
+    // PC mouse click — inspect spoon icon
+    gameCanvas2.addEventListener('click', (e) => {
+        const worldX = e.clientX + camX;
+        const worldY = e.clientY + camY;
+        const SPOON_HIT_R = 36;
+        for (const ex of EXHIBITS) {
+            const dPlayer = Math.hypot(player.x - ex.x, player.y - ex.y);
+            if (dPlayer >= EXHIBIT_DIST) continue;
+            const spoonCx = ex.x;
+            const spoonCy = ex.y - EXHIBIT_H / 2 - 14;
+            if (Math.hypot(worldX - spoonCx, worldY - spoonCy) < SPOON_HIT_R) {
+                openModal(ex);
+                break;
+            }
+        }
+    });
+
+    // Mouse move — track for scene 3 star attraction (stored globally)
+    window.addEventListener('mousemove', (e) => { s3MouseX = e.clientX; s3MouseY = e.clientY; });
 
     // Exhibit modal close button
     document.getElementById('exhibit-close-btn').addEventListener('click', closeModal);
@@ -728,8 +726,10 @@ function resizeGame() {
 
 function gameLoop() {
     if (!gameRunning) return;
-    update();
-    render();
+    if (!scene3Active) {
+        update();
+        render();
+    }
     requestAnimationFrame(gameLoop);
 }
 
@@ -809,6 +809,12 @@ function update() {
         }
     }
 
+    // --- Scene 3 trigger: step through the open secret door ---
+    if (secretDoorOpen && player.y < OB.top && !scene3Active) {
+        enterScene3();
+        return;
+    }
+
     // --- Nearest exhibit (for interact hint & Space key) ---
     nearestExhibit = null;
     let minDist = EXHIBIT_DIST;
@@ -868,7 +874,6 @@ function render() {
     drawSecretDoorArea();
     SONGS.forEach(s => { if (!s.collected) drawSong(s); });
     EXHIBITS.forEach(drawExhibit);
-    drawIceCreamCat();
     drawPlayer();
 
     gCtx.restore();
@@ -965,8 +970,7 @@ function drawOuterLobbyWalls() {
  * Draw the secret door indicator (lock icon or glow when open).
  */
 function drawSecretDoorArea() {
-    const iceRoom = ROOMS.find(r => r.id === 'iceCream');
-    const sDCx = iceRoom.x + iceRoom.w / 2;
+    const sDCx = SECRET_DOOR_CX;
     const sDL = sDCx - DOOR_GAP / 2;
 
     if (secretDoorOpen) {
@@ -1086,29 +1090,41 @@ function drawExhibit(ex) {
         }
     }
 
-    // Paw icon when player is in range (falls back to eye if paw not loaded)
+    // Red spoon icon when player is in range
     const dist = Math.hypot(player.x - x, player.y - y);
     if (dist < EXHIBIT_DIST) {
-        if (pawImage) {
-            const pw = 20, ph = 20;
-            gCtx.drawImage(pawImage, x - pw / 2, y - hh - ph - 4, pw, ph);
-        } else {
-            drawEyeIcon(x, y - hh - 10);
-        }
+        drawSpoonIcon(x, y - hh - 14);
     }
 }
 
 /**
- * Draw the catIce image centred on the ice cream counter.
+ * Draw a small red DQ-style ice cream spoon with soft glow.
+ * cx, cy = center of the icon in world space.
  */
-function drawIceCreamCat() {
-    if (!iceCatImage) return;
-    const room = ROOMS.find(r => r.id === 'iceCream');
-    const imgW = Math.min(room.w - 16, 120);
-    const imgH = imgW;
-    const imgX = room.x + room.w / 2 - imgW / 2;
-    const imgY = room.y + room.h / 2 - imgH / 2;
-    gCtx.drawImage(iceCatImage, imgX, imgY, imgW, imgH);
+function drawSpoonIcon(cx, cy) {
+    gCtx.save();
+    gCtx.translate(cx, cy);
+    gCtx.rotate(-0.3); // slight tilt
+
+    gCtx.shadowBlur = 12;
+    gCtx.shadowColor = 'rgba(210, 30, 30, 0.65)';
+    gCtx.fillStyle   = '#D42020';
+    gCtx.strokeStyle = '#D42020';
+    gCtx.lineWidth   = 2.2;
+    gCtx.lineCap     = 'round';
+
+    // Bowl (ellipse at top)
+    gCtx.beginPath();
+    gCtx.ellipse(0, -9, 5, 7, 0, 0, Math.PI * 2);
+    gCtx.fill();
+
+    // Handle (line from bottom of bowl downward)
+    gCtx.beginPath();
+    gCtx.moveTo(0, -2);
+    gCtx.lineTo(0, 13);
+    gCtx.stroke();
+
+    gCtx.restore();
 }
 
 /**
@@ -1470,4 +1486,193 @@ function showToast(text) {
     void el.offsetWidth;
     el.style.animation = '';
     popupTimer = 2200;
+}
+
+
+// ============================================================
+//  Scene 3 — Star Field
+// ============================================================
+
+let scene3Active = false;
+let s3Ctx = null;
+let s3MouseX = -9999, s3MouseY = -9999;
+const scene3Stars = [];
+
+// ---- Star helpers ----
+
+function drawStar5(ctx, cx, cy, outerR, innerR, color) {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+        const angle = (i * Math.PI / 5) - Math.PI / 2;
+        const r = i % 2 === 0 ? outerR : innerR;
+        i === 0
+            ? ctx.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle))
+            : ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+    }
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+}
+
+function initScene3Stars() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    scene3Stars.length = 0;
+    for (let i = 0; i < 100; i++) {
+        const outerR = 3 + Math.random() * 13;
+        scene3Stars.push({
+            x:  Math.random() * vw,
+            y:  Math.random() * (vh - 60),
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            outerR,
+            innerR: outerR * 0.38,
+            opacity: 0.5 + Math.random() * 0.5,
+        });
+    }
+}
+
+function updateScene3Stars() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const RETURN_BAR_H = 52;
+    const floorY = vh - RETURN_BAR_H;
+    const ATTRACT_R = 190, ATTRACT_F = 0.045, MAX_SPD = 3.2, DAMP = 0.97;
+
+    for (const s of scene3Stars) {
+        // Gentle brownian jitter
+        s.vx += (Math.random() - 0.5) * 0.04;
+        s.vy += (Math.random() - 0.5) * 0.04;
+
+        // Cursor / touch attraction
+        const dx = s3MouseX - s.x, dy = s3MouseY - s.y;
+        const d = Math.hypot(dx, dy);
+        if (d > 0 && d < ATTRACT_R) {
+            const f = ATTRACT_F * (1 - d / ATTRACT_R);
+            s.vx += (dx / d) * f;
+            s.vy += (dy / d) * f;
+        }
+
+        // Damp and cap speed
+        s.vx *= DAMP; s.vy *= DAMP;
+        const spd = Math.hypot(s.vx, s.vy);
+        if (spd > MAX_SPD) { s.vx = s.vx / spd * MAX_SPD; s.vy = s.vy / spd * MAX_SPD; }
+
+        s.x += s.vx; s.y += s.vy;
+
+        // Wrap edges (stay above return bar)
+        if (s.x < -s.outerR)   s.x = vw + s.outerR;
+        if (s.x > vw + s.outerR) s.x = -s.outerR;
+        if (s.y < -s.outerR)   s.y = floorY - s.outerR;
+        if (s.y > floorY + s.outerR) s.y = s.outerR;
+    }
+}
+
+function renderScene3() {
+    const canvas = document.getElementById('scene3-canvas');
+    const ctx = s3Ctx;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const RETURN_BAR_H = 52;
+    const barY = vh - RETURN_BAR_H;
+
+    // Resize canvas if needed
+    if (canvas.width !== vw || canvas.height !== vh) {
+        canvas.width = vw; canvas.height = vh;
+    }
+
+    // Black background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, vw, vh);
+
+    // Stars
+    for (const s of scene3Stars) {
+        ctx.save();
+        ctx.globalAlpha = s.opacity;
+        ctx.shadowBlur  = s.outerR * 1.6;
+        ctx.shadowColor = 'rgba(255,255,255,0.7)';
+        drawStar5(ctx, s.x, s.y, s.outerR, s.innerR, '#ffffff');
+        ctx.restore();
+    }
+
+    // Return bar
+    ctx.fillStyle = 'rgba(90, 90, 90, 0.88)';
+    ctx.fillRect(0, barY, vw, RETURN_BAR_H);
+    ctx.fillStyle = 'rgba(210, 210, 210, 0.9)';
+    ctx.font = '15px Arial, Helvetica, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('← return to gallery', vw / 2, barY + RETURN_BAR_H / 2);
+    ctx.textBaseline = 'alphabetic';
+}
+
+function scene3Loop() {
+    if (!scene3Active) return;
+    updateScene3Stars();
+    renderScene3();
+    requestAnimationFrame(scene3Loop);
+}
+
+// ---- Scene 3 click / touch ----
+
+function onScene3Click(e) {
+    const vh = window.innerHeight;
+    if (e.clientY > vh - 52) {
+        exitScene3();
+    }
+}
+
+function onScene3TouchStart(e) {
+    e.preventDefault();
+    for (const t of e.changedTouches) {
+        s3MouseX = t.clientX; s3MouseY = t.clientY;
+        if (t.clientY > window.innerHeight - 52) { exitScene3(); return; }
+    }
+}
+
+function onScene3TouchMove(e) {
+    e.preventDefault();
+    for (const t of e.changedTouches) { s3MouseX = t.clientX; s3MouseY = t.clientY; }
+}
+
+// ---- Transitions ----
+
+function enterScene3() {
+    scene3Active = true;
+
+    // Hide scene 2 overlays
+    gameCanvas2.style.display = 'none';
+    document.getElementById('song-player').style.display = 'none';
+    document.getElementById('interact-hint').style.display = 'none';
+
+    // Show scene 3 canvas
+    const s3 = document.getElementById('scene3-canvas');
+    s3.style.display = 'block';
+    s3Ctx = s3.getContext('2d');
+
+    if (scene3Stars.length === 0) initScene3Stars();
+
+    s3.addEventListener('click', onScene3Click);
+    s3.addEventListener('touchstart', onScene3TouchStart, { passive: false });
+    s3.addEventListener('touchmove',  onScene3TouchMove,  { passive: false });
+
+    requestAnimationFrame(scene3Loop);
+}
+
+function exitScene3() {
+    scene3Active = false;
+
+    const s3 = document.getElementById('scene3-canvas');
+    s3.style.display = 'none';
+    s3.removeEventListener('click', onScene3Click);
+    s3.removeEventListener('touchstart', onScene3TouchStart);
+    s3.removeEventListener('touchmove',  onScene3TouchMove);
+
+    // Show scene 2 again
+    gameCanvas2.style.display = 'block';
+    document.getElementById('song-player').style.display = 'flex';
+
+    // Push player back so they don't immediately re-trigger
+    player.y = OB.top + PLAYER_RADIUS + 28;
+    player.dir = 'down';
+
+    // Reset mouse so no phantom attraction
+    s3MouseX = -9999; s3MouseY = -9999;
 }
