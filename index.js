@@ -1503,7 +1503,7 @@ let s3PointerDown = false;                     // true only while held / finger 
 let s3PendingAudio = null;                     // song to play on first gesture in scene 3
 
 // ---- Sleeping cat NPC (scene 3, top-left) ----
-const CAT_NPC_W = 80, CAT_NPC_H = 80, CAT_HIT_R = 55;
+const CAT_NPC_W = 240, CAT_NPC_H = 240, CAT_HIT_R = 110;
 const CAT_LINES = [
     "Sleep is the best remedy\nfor the day. Let me sleep.",
     "Don't talk to me. You don't\nknow how tiring it is to be\nin charge of the freezer.",
@@ -1673,7 +1673,7 @@ function updateScene3Movement() {
 // ---- Cat NPC ----
 
 function drawCatNPC() {
-    const cx = OB.left + 90, cy = OB.top + 90;
+    const cx = OB.left + 160, cy = OB.top + 210;
     // Cat image
     if (catNpcImg.complete && catNpcImg.naturalWidth > 0) {
         gCtx.drawImage(catNpcImg, cx - CAT_NPC_W / 2, cy - CAT_NPC_H / 2, CAT_NPC_W, CAT_NPC_H);
@@ -1718,7 +1718,7 @@ function drawCatNPC() {
 
 function tappedCat(screenX, screenY) {
     const wx = screenX + camX, wy = screenY + camY;
-    const cx = OB.left + 90, cy = OB.top + 90;
+    const cx = OB.left + 160, cy = OB.top + 210;
     if (Math.hypot(wx - cx, wy - cy) > CAT_HIT_R) return;
     catBubbleLine  = catDialogueIdx;
     catDialogueIdx = (catDialogueIdx + 1) % CAT_LINES.length;
