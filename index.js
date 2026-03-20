@@ -1433,36 +1433,47 @@ function closeModal() {
 //  Song Player — Audio + Vinyl Widget
 // ============================================================
 
+let audioUnlocked = false;
+function unlockAudio() {
+    if (audioUnlocked) return;
+    if (!currentAudio) currentAudio = new Audio();
+    currentAudio.play().then(() => {
+        currentAudio.pause();
+        audioUnlocked = true;
+    }).catch(() => {});
+}
+document.addEventListener('touchstart', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+
 /**
  * Start playing a song. Stops any currently playing audio first.
  */
 function playSong(song) {
-    // Stop current audio
-    if (currentAudio) {
+    if (!currentAudio) {
+        currentAudio = new Audio();
+    } else {
         currentAudio.pause();
-        currentAudio.currentTime = 0;
     }
 
-    currentAudio = new Audio(song.file);
+    currentAudio.src = song.file;
     currentAudio.loop = false;
     currentAudio.volume = 0.7;
 
     currentSongIdx = collectedSongs.indexOf(song);
 
     // Auto-advance to next collected song when this one ends
-    currentAudio.addEventListener('ended', () => {
+    currentAudio.onended = () => {
         if (collectedSongs.length > 0) {
             const nextIdx = (currentSongIdx + 1) % collectedSongs.length;
             playSong(collectedSongs[nextIdx]);
         }
-    });
+    };
 
     // Rebuild dropdown to show updated playing state
-    currentAudio.addEventListener('playing', rebuildDropdown);
+    currentAudio.onplaying = rebuildDropdown;
 
     currentAudio.play().catch(() => {
         // Autoplay may be blocked before user gesture — disk stays static
-        // The user can click the vinyl to open dropdown and click a song to start
     });
 
     rebuildDropdown();
