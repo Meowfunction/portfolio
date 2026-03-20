@@ -407,11 +407,11 @@ let songDropdownOpen = false;
 // entered: revealed when player walks in; solid rooms are always open (ice cream counter)
 const ROOMS = [
     {
-        id: 'culinary', label: 'culinary', x: 160, y: 280, w: 470, h: 370,
+        id: 'culinary', label: 'culinary', x: 160, y: 260, w: 470, h: 370,
         color: '#FFF3DC', opaqueColor: '#FFD366', doorSide: 'bottom', doorGapCx: 130 + 470 * 0.78, entered: false
     },
     {
-        id: 'design', label: 'design room', x: 830, y: 280, w: 470, h: 370,
+        id: 'design', label: 'design room', x: 830, y: 260, w: 470, h: 370,
         color: '#EDFFF0', opaqueColor: '#5EFFA0', doorSide: 'bottom', doorGapCx: 800 + 470 * 0.22, entered: false
     },
     {
@@ -427,17 +427,17 @@ const ROOMS = [
 // ---- Exhibit Definitions ----
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
-    // Culinary  (x: 160–630, y: 280–650) — top wall & left wall
-    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 215, y: 225, imgSrc: 'rooms/culinary/BananaMage.png' },
-    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 325, y: 225, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
-    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 485, y: 225, imgSrc: 'rooms/culinary/Hamwich.png' },
-    { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 165, y: 350, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
-    { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 165, y: 490, imgSrc: 'rooms/culinary/ItalyPasta.png' },
-    // Design    (x: 830–1300, y: 280–650) — top wall & right wall
-    { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 885, y: 225, imgSrc: 'rooms/design/AGIHoodie.jpg' },
-    { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1005, y: 225, imgSrc: 'rooms/design/FoxtailVase.png' },
-    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1165, y: 225, imgSrc: 'rooms/design/GoldenRatio.png' },
-    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 350, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
+    // Culinary  (x: 160–630, y: 260–630) — top wall & left wall
+    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 215, y: 295, imgSrc: 'rooms/culinary/BananaMage.png' },
+    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 325, y: 295, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
+    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 485, y: 295, imgSrc: 'rooms/culinary/Hamwich.png' },
+    { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 165, y: 330, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
+    { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 165, y: 470, imgSrc: 'rooms/culinary/ItalyPasta.png' },
+    // Design    (x: 830–1300, y: 260–630) — top wall & right wall
+    { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 885, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
+    { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1005, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
+    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1165, y: 295, imgSrc: 'rooms/design/GoldenRatio.png' },
+    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 330, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
     { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
     { id: 'i2', roomId: 'illustration', label: "I'm Bach", x: 295, y: 978, imgSrc: 'rooms/illustration/ImBach.GIF' },
@@ -1733,7 +1733,7 @@ function onScene3TouchAll(e) {
     e.preventDefault();
     onTouchStart(e); // delegate to joystick system
     // Resume audio if autoplay was blocked on entry (touch is a trusted gesture)
-    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => {});
+    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => { });
     for (const t of e.changedTouches) {
         if (t.identifier !== joystick.touchId) {
             // Non-joystick touch = star attraction finger
@@ -1765,7 +1765,7 @@ function onScene3TouchEndAll(e) {
 function onScene3MouseDown(e) {
     s3PointerDown = true; s3MouseX = e.clientX; s3MouseY = e.clientY;
     // Resume audio if autoplay was blocked on entry
-    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => {});
+    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => { });
 }
 function onScene3MouseUp() { s3PointerDown = false; }
 
