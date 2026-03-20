@@ -1490,189 +1490,299 @@ function showToast(text) {
 
 
 // ============================================================
-//  Scene 3 — Star Field
+//  Scene 3 — Star Field (with player)
 // ============================================================
 
-let scene3Active = false;
-let s3Ctx = null;
-let s3MouseX = -9999, s3MouseY = -9999;
+let scene3Active  = false;
+let s3Ctx         = null;
+let s3MouseX      = -9999, s3MouseY = -9999;  // screen-space pointer position
+let s3PointerDown = false;                     // true only while held / finger touching
 const scene3Stars = [];
 
-// ---- Star helpers ----
+// Scene 3 boundary walls (same OB, but no bottom wall — walking off bottom returns)
+const scene3WallRects = [
+    { x: OB.left,  y: OB.top,    w: OB.right - OB.left, h: WALL_T }, // top
+    { x: OB.left,  y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }, // left
+    { x: OB.right, y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }, // right
+];
 
-function drawStar5(ctx, cx, cy, outerR, innerR, color) {
-    ctx.beginPath();
+// ---- Rounded 5-pointed star ----
+
+/**
+ * Draw a soft 5-pointed star using midpoint quadratic bezier rounding.
+ * All corners (inner and outer) are smoothed.
+ */
+function drawStar5Rounded(ctx, cx, cy, outerR, innerR) {
+    const pts = [];
     for (let i = 0; i < 10; i++) {
         const angle = (i * Math.PI / 5) - Math.PI / 2;
         const r = i % 2 === 0 ? outerR : innerR;
-        i === 0
-            ? ctx.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle))
-            : ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+        pts.push({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+    }
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+        const prev = pts[(i - 1 + 10) % 10];
+        const curr = pts[i];
+        const next = pts[(i + 1) % 10];
+        const mx1 = (prev.x + curr.x) / 2, my1 = (prev.y + curr.y) / 2;
+        const mx2 = (curr.x + next.x) / 2, my2 = (curr.y + next.y) / 2;
+        if (i === 0) ctx.moveTo(mx1, my1); else ctx.lineTo(mx1, my1);
+        ctx.quadraticCurveTo(curr.x, curr.y, mx2, my2);
     }
     ctx.closePath();
-    ctx.fillStyle = color;
+    ctx.fillStyle = '#ffffff';
     ctx.fill();
 }
 
+// ---- Star state ----
+
 function initScene3Stars() {
-    const vw = window.innerWidth, vh = window.innerHeight;
     scene3Stars.length = 0;
-    for (let i = 0; i < 100; i++) {
-        const outerR = 3 + Math.random() * 13;
+    const pad = 60;
+    for (let i = 0; i < 120; i++) {
+        const outerR = 4 + Math.random() * 14;
         scene3Stars.push({
-            x:  Math.random() * vw,
-            y:  Math.random() * (vh - 60),
+            x:  OB.left  + pad + Math.random() * (OB.right  - OB.left  - pad * 2),
+            y:  OB.top   + pad + Math.random() * (OB.bottom - OB.top   - pad * 2),
             vx: (Math.random() - 0.5) * 0.5,
             vy: (Math.random() - 0.5) * 0.5,
             outerR,
-            innerR: outerR * 0.38,
+            innerR:  outerR * 0.38,
             opacity: 0.5 + Math.random() * 0.5,
         });
     }
 }
 
 function updateScene3Stars() {
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const RETURN_BAR_H = 52;
-    const floorY = vh - RETURN_BAR_H;
-    const ATTRACT_R = 190, ATTRACT_F = 0.045, MAX_SPD = 3.2, DAMP = 0.97;
+    // Convert screen-space pointer to world space for attraction
+    const worldPX = s3MouseX + camX;
+    const worldPY = s3MouseY + camY;
+    const ATTRACT_R = 220, ATTRACT_F = 0.05, MAX_SPD = 3.5, DAMP = 0.97;
 
     for (const s of scene3Stars) {
-        // Gentle brownian jitter
+        // Gentle brownian drift
         s.vx += (Math.random() - 0.5) * 0.04;
         s.vy += (Math.random() - 0.5) * 0.04;
 
-        // Cursor / touch attraction
-        const dx = s3MouseX - s.x, dy = s3MouseY - s.y;
-        const d = Math.hypot(dx, dy);
-        if (d > 0 && d < ATTRACT_R) {
-            const f = ATTRACT_F * (1 - d / ATTRACT_R);
-            s.vx += (dx / d) * f;
-            s.vy += (dy / d) * f;
+        // Attraction — only while pointer is held down
+        if (s3PointerDown) {
+            const dx = worldPX - s.x, dy = worldPY - s.y;
+            const d = Math.hypot(dx, dy);
+            if (d > 0 && d < ATTRACT_R) {
+                const f = ATTRACT_F * (1 - d / ATTRACT_R);
+                s.vx += (dx / d) * f;
+                s.vy += (dy / d) * f;
+            }
         }
 
-        // Damp and cap speed
+        // Damp + clamp
         s.vx *= DAMP; s.vy *= DAMP;
         const spd = Math.hypot(s.vx, s.vy);
         if (spd > MAX_SPD) { s.vx = s.vx / spd * MAX_SPD; s.vy = s.vy / spd * MAX_SPD; }
 
         s.x += s.vx; s.y += s.vy;
 
-        // Wrap edges (stay above return bar)
-        if (s.x < -s.outerR)   s.x = vw + s.outerR;
-        if (s.x > vw + s.outerR) s.x = -s.outerR;
-        if (s.y < -s.outerR)   s.y = floorY - s.outerR;
-        if (s.y > floorY + s.outerR) s.y = s.outerR;
+        // Wrap within world bounds
+        if (s.x < OB.left  - s.outerR) s.x = OB.right  + s.outerR;
+        if (s.x > OB.right + s.outerR) s.x = OB.left   - s.outerR;
+        if (s.y < OB.top   - s.outerR) s.y = OB.bottom + s.outerR;
+        if (s.y > OB.bottom+ s.outerR) s.y = OB.top    - s.outerR;
     }
 }
 
+// ---- Player movement inside scene 3 ----
+
+function updateScene3Movement() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let dx = 0, dy = 0;
+
+    if (keys2['ArrowLeft']  || keys2['a'] || keys2['A']) dx -= 1;
+    if (keys2['ArrowRight'] || keys2['d'] || keys2['D']) dx += 1;
+    if (keys2['ArrowUp']    || keys2['w'] || keys2['W']) dy -= 1;
+    if (keys2['ArrowDown']  || keys2['s'] || keys2['S']) dy += 1;
+
+    if (joystick.active) {
+        const jdx = joystick.stickX - joystick.baseX;
+        const jdy = joystick.stickY - joystick.baseY;
+        const jLen = Math.hypot(jdx, jdy);
+        if (jLen > 8) { dx += jdx / joystick.BASE_R; dy += jdy / joystick.BASE_R; }
+    }
+
+    const len = Math.hypot(dx, dy);
+    if (len > 0) {
+        dx = (dx / len) * PLAYER_SPEED;
+        dy = (dy / len) * PLAYER_SPEED;
+        if (Math.abs(dx) > Math.abs(dy)) player.dir = dx > 0 ? 'right' : 'left';
+        else player.dir = dy > 0 ? 'down' : 'up';
+    }
+
+    // Resolve against scene3 walls (swap wallRects temporarily)
+    const savedWalls = wallRects;
+    wallRects = scene3WallRects;
+    const { x: rx, y: ry } = resolveMove(player.x + dx, player.y + dy);
+    wallRects = savedWalls;
+    player.x = rx; player.y = ry;
+
+    // Return to scene 2 when player walks off the bottom
+    if (player.y > OB.bottom + PLAYER_RADIUS) { exitScene3(); return; }
+
+    // Camera
+    camX = Math.max(0, Math.min(player.x - vw / 2, WORLD_W - vw));
+    camY = Math.max(0, Math.min(player.y - vh / 2, WORLD_H - vh));
+}
+
+// ---- Render ----
+
 function renderScene3() {
     const canvas = document.getElementById('scene3-canvas');
-    const ctx = s3Ctx;
     const vw = window.innerWidth, vh = window.innerHeight;
     const RETURN_BAR_H = 52;
-    const barY = vh - RETURN_BAR_H;
 
-    // Resize canvas if needed
     if (canvas.width !== vw || canvas.height !== vh) {
         canvas.width = vw; canvas.height = vh;
     }
 
-    // Black background
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, vw, vh);
+    // Temporarily route all draw calls through s3Ctx
+    const prevCtx = gCtx;
+    gCtx = s3Ctx;
+
+    // Black background (screen space)
+    gCtx.fillStyle = '#000';
+    gCtx.fillRect(0, 0, vw, vh);
+
+    // Camera transform — world space drawing below
+    gCtx.save();
+    gCtx.translate(-camX, -camY);
 
     // Stars
     for (const s of scene3Stars) {
-        ctx.save();
-        ctx.globalAlpha = s.opacity;
-        ctx.shadowBlur  = s.outerR * 1.6;
-        ctx.shadowColor = 'rgba(255,255,255,0.7)';
-        drawStar5(ctx, s.x, s.y, s.outerR, s.innerR, '#ffffff');
-        ctx.restore();
+        gCtx.save();
+        gCtx.globalAlpha = s.opacity;
+        gCtx.shadowBlur  = s.outerR * 1.8;
+        gCtx.shadowColor = 'rgba(255,255,255,0.7)';
+        drawStar5Rounded(gCtx, s.x, s.y, s.outerR, s.innerR);
+        gCtx.restore();
     }
 
-    // Return bar
-    ctx.fillStyle = 'rgba(90, 90, 90, 0.88)';
-    ctx.fillRect(0, barY, vw, RETURN_BAR_H);
-    ctx.fillStyle = 'rgba(210, 210, 210, 0.9)';
-    ctx.font = '15px Arial, Helvetica, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('← return to gallery', vw / 2, barY + RETURN_BAR_H / 2);
-    ctx.textBaseline = 'alphabetic';
+    // Player (reuses scene 2 drawPlayer which uses gCtx)
+    drawPlayer();
+
+    gCtx.restore(); // end camera transform
+
+    // Return bar (screen space overlay)
+    const barY = vh - RETURN_BAR_H;
+    gCtx.fillStyle = 'rgba(90, 90, 90, 0.88)';
+    gCtx.fillRect(0, barY, vw, RETURN_BAR_H);
+    gCtx.fillStyle = 'rgba(210, 210, 210, 0.9)';
+    gCtx.font = '15px Arial, Helvetica, sans-serif';
+    gCtx.textAlign = 'center';
+    gCtx.textBaseline = 'middle';
+    gCtx.fillText('← return to gallery', vw / 2, barY + RETURN_BAR_H / 2);
+    gCtx.textBaseline = 'alphabetic';
+
+    // Restore context
+    gCtx = prevCtx;
 }
 
 function scene3Loop() {
     if (!scene3Active) return;
+    updateScene3Movement();
     updateScene3Stars();
     renderScene3();
     requestAnimationFrame(scene3Loop);
 }
 
-// ---- Scene 3 click / touch ----
+// ---- Scene 3 input ----
 
 function onScene3Click(e) {
-    const vh = window.innerHeight;
-    if (e.clientY > vh - 52) {
-        exitScene3();
-    }
+    if (e.clientY > window.innerHeight - 52) exitScene3();
 }
 
-function onScene3TouchStart(e) {
+// Unified touch handler — feeds joystick AND tracks pointer for star attraction
+function onScene3TouchAll(e) {
     e.preventDefault();
+    onTouchStart(e); // delegate to joystick system
     for (const t of e.changedTouches) {
-        s3MouseX = t.clientX; s3MouseY = t.clientY;
+        if (t.identifier !== joystick.touchId) {
+            // Non-joystick touch = star attraction finger
+            s3MouseX = t.clientX; s3MouseY = t.clientY;
+            s3PointerDown = true;
+        }
         if (t.clientY > window.innerHeight - 52) { exitScene3(); return; }
     }
 }
 
-function onScene3TouchMove(e) {
+function onScene3TouchMoveAll(e) {
     e.preventDefault();
-    for (const t of e.changedTouches) { s3MouseX = t.clientX; s3MouseY = t.clientY; }
+    onTouchMove(e);
+    for (const t of e.changedTouches) {
+        if (t.identifier !== joystick.touchId) {
+            s3MouseX = t.clientX; s3MouseY = t.clientY;
+        }
+    }
 }
+
+function onScene3TouchEndAll(e) {
+    onTouchEnd(e);
+    // If no more non-joystick touches, release pointer
+    if (e.touches.length === 0 || (e.touches.length === 1 && joystick.active)) {
+        s3PointerDown = false;
+    }
+}
+
+function onScene3MouseDown(e) { s3PointerDown = true;  s3MouseX = e.clientX; s3MouseY = e.clientY; }
+function onScene3MouseUp()    { s3PointerDown = false; }
 
 // ---- Transitions ----
 
 function enterScene3() {
     scene3Active = true;
 
-    // Hide scene 2 overlays
     gameCanvas2.style.display = 'none';
     document.getElementById('song-player').style.display = 'none';
     document.getElementById('interact-hint').style.display = 'none';
 
-    // Show scene 3 canvas
     const s3 = document.getElementById('scene3-canvas');
     s3.style.display = 'block';
     s3Ctx = s3.getContext('2d');
 
     if (scene3Stars.length === 0) initScene3Stars();
 
-    s3.addEventListener('click', onScene3Click);
-    s3.addEventListener('touchstart', onScene3TouchStart, { passive: false });
-    s3.addEventListener('touchmove',  onScene3TouchMove,  { passive: false });
+    // Place player just inside the bottom of scene 3 world
+    player.x = WORLD_W / 2;
+    player.y = OB.bottom - PLAYER_RADIUS - 30;
+    player.dir = 'up';
+
+    s3.addEventListener('touchstart', onScene3TouchAll,    { passive: false });
+    s3.addEventListener('touchmove',  onScene3TouchMoveAll, { passive: false });
+    s3.addEventListener('touchend',   onScene3TouchEndAll,  { passive: false });
+    s3.addEventListener('mousedown',  onScene3MouseDown);
+    s3.addEventListener('click',      onScene3Click);
+    window.addEventListener('mouseup', onScene3MouseUp);
 
     requestAnimationFrame(scene3Loop);
 }
 
 function exitScene3() {
     scene3Active = false;
+    s3PointerDown = false;
 
     const s3 = document.getElementById('scene3-canvas');
     s3.style.display = 'none';
-    s3.removeEventListener('click', onScene3Click);
-    s3.removeEventListener('touchstart', onScene3TouchStart);
-    s3.removeEventListener('touchmove',  onScene3TouchMove);
+    s3.removeEventListener('touchstart', onScene3TouchAll);
+    s3.removeEventListener('touchmove',  onScene3TouchMoveAll);
+    s3.removeEventListener('touchend',   onScene3TouchEndAll);
+    s3.removeEventListener('mousedown',  onScene3MouseDown);
+    s3.removeEventListener('click',      onScene3Click);
+    window.removeEventListener('mouseup', onScene3MouseUp);
 
-    // Show scene 2 again
     gameCanvas2.style.display = 'block';
     document.getElementById('song-player').style.display = 'flex';
 
-    // Push player back so they don't immediately re-trigger
+    // Place player just inside the top of scene 2 (below the secret door)
+    player.x = WORLD_W / 2;
     player.y = OB.top + PLAYER_RADIUS + 28;
     player.dir = 'down';
 
-    // Reset mouse so no phantom attraction
     s3MouseX = -9999; s3MouseY = -9999;
 }
