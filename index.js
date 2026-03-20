@@ -1702,8 +1702,9 @@ function updateScene3Movement() {
     if (player.y > OB.bottom + PLAYER_RADIUS) { exitScene3(); return; }
 
     // Camera
+    const minCamY = Math.min(0, S3R_Y - 50);
     camX = Math.max(0, Math.min(player.x - vw / 2, WORLD_W - vw));
-    camY = Math.max(0, Math.min(player.y - vh / 2, WORLD_H - vh));
+    camY = Math.max(minCamY, Math.min(player.y - vh / 2, WORLD_H - vh));
 }
 
 // ---- Cat NPC ----
