@@ -325,7 +325,7 @@ const SONG_RADIUS = 32;     // collectible circle radius
 const SONG_DIST = 30;     // collection trigger distance
 
 // ---- Outer boundary constants ----
-const OB = { left: 50, right: 1350, top: 70, bottom: 1080 };
+const OB = { left: 50, right: 1350, top: 170, bottom: 1080 };
 
 // ---- Secret door: fixed center X (world coords) ----
 const SECRET_DOOR_CX = 700;
@@ -407,19 +407,19 @@ let songDropdownOpen = false;
 // entered: revealed when player walks in; solid rooms are always open (ice cream counter)
 const ROOMS = [
     {
-        id: 'culinary', label: 'culinary', x: 130, y: 90, w: 470, h: 370,
+        id: 'culinary', label: 'culinary', x: 160, y: 280, w: 470, h: 370,
         color: '#FFF3DC', opaqueColor: '#FFD366', doorSide: 'bottom', doorGapCx: 130 + 470 * 0.78, entered: false
     },
     {
-        id: 'design', label: 'design room', x: 800, y: 90, w: 470, h: 370,
+        id: 'design', label: 'design room', x: 830, y: 280, w: 470, h: 370,
         color: '#EDFFF0', opaqueColor: '#5EFFA0', doorSide: 'bottom', doorGapCx: 800 + 470 * 0.22, entered: false
     },
     {
-        id: 'illustration', label: 'illustration', x: 130, y: 640, w: 470, h: 370,
+        id: 'illustration', label: 'illustration', x: 160, y: 710, w: 470, h: 370,
         color: '#FFEDF5', opaqueColor: '#FFB0D8', doorSide: 'top', doorGapCx: 130 + 470 * 0.78, entered: false
     },
     {
-        id: 'poetry', label: 'poetry', x: 800, y: 640, w: 470, h: 370,
+        id: 'poetry', label: 'poetry', x: 830, y: 710, w: 470, h: 370,
         color: '#F5EDFF', opaqueColor: '#CCA0FF', doorSide: 'top', doorGapCx: 800 + 470 * 0.22, entered: false
     },
 ];
@@ -427,21 +427,21 @@ const ROOMS = [
 // ---- Exhibit Definitions ----
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
-    // Culinary  (x: 130–600, y: 90–460) — top wall & left wall
-    { id: 'c1', roomId: 'culinary', label: 'Banana Mage',          x: 215, y: 125, imgSrc: 'rooms/culinary/BananaMage.png' },
-    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot',          x: 325, y: 125, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
-    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 485, y: 125, imgSrc: 'rooms/culinary/Hamwich.png' },
-    { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste',    x: 165, y: 250, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
-    { id: 'c5', roomId: 'culinary', label: 'Italy Pasta',          x: 165, y: 390, imgSrc: 'rooms/culinary/ItalyPasta.png' },
-    // Design    (x: 800–1270, y: 90–460) — top wall & right wall
-    { id: 'd1', roomId: 'design', label: 'AGI Hoodie',                  x: 885,  y: 125, imgSrc: 'rooms/design/AGIHoodie.jpg' },
-    { id: 'd2', roomId: 'design', label: 'Foxtail Vase',                x: 1005, y: 125, imgSrc: 'rooms/design/FoxtailVase.png' },
-    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi',x: 1165, y: 125, imgSrc: 'rooms/design/GoldenRatio.png' },
-    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case',        x: 1235, y: 250, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
+    // Culinary  (x: 160–630, y: 280–650) — top wall & left wall
+    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 215, y: 225, imgSrc: 'rooms/culinary/BananaMage.png' },
+    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 325, y: 225, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
+    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 485, y: 225, imgSrc: 'rooms/culinary/Hamwich.png' },
+    { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 165, y: 350, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
+    { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 165, y: 490, imgSrc: 'rooms/culinary/ItalyPasta.png' },
+    // Design    (x: 830–1300, y: 280–650) — top wall & right wall
+    { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 885, y: 225, imgSrc: 'rooms/design/AGIHoodie.jpg' },
+    { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1005, y: 225, imgSrc: 'rooms/design/FoxtailVase.png' },
+    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1165, y: 225, imgSrc: 'rooms/design/GoldenRatio.png' },
+    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 350, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
-    { id: 'i1', roomId: 'illustration', label: 'Brief Spring',   x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
-    { id: 'i2', roomId: 'illustration', label: "I'm Bach",       x: 295, y: 978, imgSrc: 'rooms/illustration/ImBach.GIF' },
-    { id: 'i3', roomId: 'illustration', label: 'Neowsletter',    x: 415, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png' },
+    { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
+    { id: 'i2', roomId: 'illustration', label: "I'm Bach", x: 295, y: 978, imgSrc: 'rooms/illustration/ImBach.GIF' },
+    { id: 'i3', roomId: 'illustration', label: 'Neowsletter', x: 415, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png' },
     { id: 'i4', roomId: 'illustration', label: 'Pieced Animals', x: 535, y: 978, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
     // Poetry    (x: 800–1270, y: 640–1010) — bottom wall
     {
@@ -476,10 +476,10 @@ EXHIBITS.forEach((ex, i) => { if (ex.iceImgIdx === undefined) ex.iceImgIdx = i %
 
 // ---- Song Collectibles (one per room, centred inside) ----
 const SONGS = [
-    { id: 's1', x: 365, y: 275, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3',     imgKey: 'daisy', roomId: 'culinary' },
-    { id: 's2', x: 365, y: 825, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3',  imgKey: 'sea',   roomId: 'illustration' },
-    { id: 's3', x: 1035, y: 275, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3',      imgKey: 'space', roomId: 'design' },
-    { id: 's4', collected: false,                   name: 'Dark Whispers',                          file: 'music/darkWhispers.mp3' },
+    { id: 's1', x: 365, y: 375, color: '#FFD215', collected: false, name: 'Minor Daisy Bell', file: 'music/minorDaisyBell.mp3', imgKey: 'daisy', roomId: 'culinary' },
+    { id: 's2', x: 365, y: 825, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea', roomId: 'illustration' },
+    { id: 's3', x: 1035, y: 375, color: '#157BFF', collected: false, name: 'A Space Odyssey', file: 'music/aSpaceOdyssey.mp3', imgKey: 'space', roomId: 'design' },
+    { id: 's4', collected: false, name: 'Dark Whispers', file: 'music/darkWhispers.mp3' },
 ];
 
 // ---- Tap tracking (for paw-icon inspect on mobile) ----
@@ -1109,10 +1109,10 @@ function drawSpoonIcon(cx, cy) {
 
     gCtx.shadowBlur = 12;
     gCtx.shadowColor = 'rgba(210, 30, 30, 0.65)';
-    gCtx.fillStyle   = '#D42020';
+    gCtx.fillStyle = '#D42020';
     gCtx.strokeStyle = '#D42020';
-    gCtx.lineWidth   = 2.2;
-    gCtx.lineCap     = 'round';
+    gCtx.lineWidth = 2.2;
+    gCtx.lineCap = 'round';
 
     // Bowl (ellipse at top)
     gCtx.beginPath();
@@ -1494,17 +1494,17 @@ function showToast(text) {
 //  Scene 3 — Star Field (with player)
 // ============================================================
 
-let scene3Active  = false;
-let s3Ctx         = null;
-let s3MouseX      = -9999, s3MouseY = -9999;  // screen-space pointer position
+let scene3Active = false;
+let s3Ctx = null;
+let s3MouseX = -9999, s3MouseY = -9999;  // screen-space pointer position
 let s3PointerDown = false;                     // true only while held / finger touching
 const scene3Stars = [];
 
 // Scene 3 boundary walls (same OB, but no bottom wall — walking off bottom returns)
 const scene3WallRects = [
-    { x: OB.left,  y: OB.top,    w: OB.right - OB.left, h: WALL_T }, // top
-    { x: OB.left,  y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }, // left
-    { x: OB.right, y: OB.top,    w: WALL_T, h: OB.bottom - OB.top }, // right
+    { x: OB.left, y: OB.top, w: OB.right - OB.left, h: WALL_T }, // top
+    { x: OB.left, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }, // left
+    { x: OB.right, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }, // right
 ];
 
 // ---- Rounded 5-pointed star ----
@@ -1542,15 +1542,15 @@ function initScene3Stars() {
     const pad = 60;
     for (let i = 0; i < 120; i++) {
         const outerR = 4 + Math.random() * 14;
-        const hx = OB.left  + pad + Math.random() * (OB.right  - OB.left  - pad * 2);
-        const hy = OB.top   + pad + Math.random() * (OB.bottom - OB.top   - pad * 2);
+        const hx = OB.left + pad + Math.random() * (OB.right - OB.left - pad * 2);
+        const hy = OB.top + pad + Math.random() * (OB.bottom - OB.top - pad * 2);
         scene3Stars.push({
             x: hx, y: hy,
             homeX: hx, homeY: hy,
             vx: (Math.random() - 0.5) * 0.5,
             vy: (Math.random() - 0.5) * 0.5,
             outerR,
-            innerR:  outerR * 0.38,
+            innerR: outerR * 0.38,
             opacity: 0.5 + Math.random() * 0.5,
             rotation: Math.random() * Math.PI * 2,
             rotationSpeed: (Math.random() - 0.5) * 0.018,
@@ -1604,10 +1604,10 @@ function updateScene3Stars() {
 
         // Wrap within world bounds (only when attracted — springs handle free mode)
         if (s3PointerDown) {
-            if (s.x < OB.left  - s.outerR) s.x = OB.right  + s.outerR;
-            if (s.x > OB.right + s.outerR) s.x = OB.left   - s.outerR;
-            if (s.y < OB.top   - s.outerR) s.y = OB.bottom + s.outerR;
-            if (s.y > OB.bottom+ s.outerR) s.y = OB.top    - s.outerR;
+            if (s.x < OB.left - s.outerR) s.x = OB.right + s.outerR;
+            if (s.x > OB.right + s.outerR) s.x = OB.left - s.outerR;
+            if (s.y < OB.top - s.outerR) s.y = OB.bottom + s.outerR;
+            if (s.y > OB.bottom + s.outerR) s.y = OB.top - s.outerR;
         }
     }
 }
@@ -1618,10 +1618,10 @@ function updateScene3Movement() {
     const vw = window.innerWidth, vh = window.innerHeight;
     let dx = 0, dy = 0;
 
-    if (keys2['ArrowLeft']  || keys2['a'] || keys2['A']) dx -= 1;
+    if (keys2['ArrowLeft'] || keys2['a'] || keys2['A']) dx -= 1;
     if (keys2['ArrowRight'] || keys2['d'] || keys2['D']) dx += 1;
-    if (keys2['ArrowUp']    || keys2['w'] || keys2['W']) dy -= 1;
-    if (keys2['ArrowDown']  || keys2['s'] || keys2['S']) dy += 1;
+    if (keys2['ArrowUp'] || keys2['w'] || keys2['W']) dy -= 1;
+    if (keys2['ArrowDown'] || keys2['s'] || keys2['S']) dy += 1;
 
     if (joystick.active) {
         const jdx = joystick.stickX - joystick.baseX;
@@ -1680,7 +1680,7 @@ function renderScene3() {
     for (const s of scene3Stars) {
         gCtx.save();
         gCtx.globalAlpha = s.opacity;
-        gCtx.shadowBlur  = s.outerR * 1.8;
+        gCtx.shadowBlur = s.outerR * 1.8;
         gCtx.shadowColor = 'rgba(255,255,255,0.7)';
         gCtx.translate(s.x, s.y);
         gCtx.rotate(s.rotation);
@@ -1713,6 +1713,12 @@ function scene3Loop() {
     updateScene3Movement();
     updateScene3Stars();
     renderScene3();
+    // Keep vinyl spinning in sync while scene 2 update() is paused
+    const diskEl = document.getElementById('vinyl-disk');
+    if (diskEl) {
+        const isPlaying = currentAudio && !currentAudio.paused && !currentAudio.ended;
+        diskEl.classList.toggle('spinning', !!isPlaying);
+    }
     requestAnimationFrame(scene3Loop);
 }
 
@@ -1726,6 +1732,8 @@ function onScene3Click(e) {
 function onScene3TouchAll(e) {
     e.preventDefault();
     onTouchStart(e); // delegate to joystick system
+    // Resume audio if autoplay was blocked on entry (touch is a trusted gesture)
+    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => {});
     for (const t of e.changedTouches) {
         if (t.identifier !== joystick.touchId) {
             // Non-joystick touch = star attraction finger
@@ -1754,8 +1762,12 @@ function onScene3TouchEndAll(e) {
     }
 }
 
-function onScene3MouseDown(e) { s3PointerDown = true;  s3MouseX = e.clientX; s3MouseY = e.clientY; }
-function onScene3MouseUp()    { s3PointerDown = false; }
+function onScene3MouseDown(e) {
+    s3PointerDown = true; s3MouseX = e.clientX; s3MouseY = e.clientY;
+    // Resume audio if autoplay was blocked on entry
+    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => {});
+}
+function onScene3MouseUp() { s3PointerDown = false; }
 
 // ---- Transitions ----
 
@@ -1784,11 +1796,11 @@ function enterScene3() {
     }
     if (darkWhispers) playSong(darkWhispers);
 
-    s3.addEventListener('touchstart', onScene3TouchAll,    { passive: false });
-    s3.addEventListener('touchmove',  onScene3TouchMoveAll, { passive: false });
-    s3.addEventListener('touchend',   onScene3TouchEndAll,  { passive: false });
-    s3.addEventListener('mousedown',  onScene3MouseDown);
-    s3.addEventListener('click',      onScene3Click);
+    s3.addEventListener('touchstart', onScene3TouchAll, { passive: false });
+    s3.addEventListener('touchmove', onScene3TouchMoveAll, { passive: false });
+    s3.addEventListener('touchend', onScene3TouchEndAll, { passive: false });
+    s3.addEventListener('mousedown', onScene3MouseDown);
+    s3.addEventListener('click', onScene3Click);
     window.addEventListener('mouseup', onScene3MouseUp);
 
     requestAnimationFrame(scene3Loop);
@@ -1801,10 +1813,10 @@ function exitScene3() {
     const s3 = document.getElementById('scene3-canvas');
     s3.style.display = 'none';
     s3.removeEventListener('touchstart', onScene3TouchAll);
-    s3.removeEventListener('touchmove',  onScene3TouchMoveAll);
-    s3.removeEventListener('touchend',   onScene3TouchEndAll);
-    s3.removeEventListener('mousedown',  onScene3MouseDown);
-    s3.removeEventListener('click',      onScene3Click);
+    s3.removeEventListener('touchmove', onScene3TouchMoveAll);
+    s3.removeEventListener('touchend', onScene3TouchEndAll);
+    s3.removeEventListener('mousedown', onScene3MouseDown);
+    s3.removeEventListener('click', onScene3Click);
     window.removeEventListener('mouseup', onScene3MouseUp);
 
     gameCanvas2.style.display = 'block';
