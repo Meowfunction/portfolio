@@ -428,9 +428,9 @@ const ROOMS = [
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
     // Culinary  (x: 160–630, y: 260–630) — top wall & left wall
-    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 245, y: 295, imgSrc: 'rooms/culinary/BananaMage.png' },
-    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 355, y: 295, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
-    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 515, y: 295, imgSrc: 'rooms/culinary/Hamwich.png' },
+    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 275, y: 295, imgSrc: 'rooms/culinary/BananaMage.png' },
+    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 385, y: 295, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
+    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 545, y: 295, imgSrc: 'rooms/culinary/Hamwich.png' },
     { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 165, y: 330, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
     { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 165, y: 470, imgSrc: 'rooms/culinary/ItalyPasta.png' },
     // Design    (x: 830–1300, y: 260–630) — top wall & right wall
@@ -661,6 +661,8 @@ function initGame() {
             e.preventDefault();
             openModal(nearestExhibit);
         }
+        // Play pending scene 3 audio on first keypress (trusted gesture context)
+        if (s3PendingAudio) { playSong(s3PendingAudio); s3PendingAudio = null; }
     });
     window.addEventListener('keyup', e => { keys2[e.key] = false; });
 
@@ -1498,6 +1500,7 @@ let scene3Active = false;
 let s3Ctx = null;
 let s3MouseX = -9999, s3MouseY = -9999;  // screen-space pointer position
 let s3PointerDown = false;                     // true only while held / finger touching
+let s3PendingAudio = null;                     // song to play on first gesture in scene 3
 const scene3Stars = [];
 
 // Scene 3 boundary walls (same OB, but no bottom wall — walking off bottom returns)
@@ -1735,8 +1738,7 @@ function onScene3Click(e) {
 function onScene3TouchAll(e) {
     e.preventDefault();
     onTouchStart(e); // delegate to joystick system
-    // Resume audio if autoplay was blocked on entry (touch is a trusted gesture)
-    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => { });
+    if (s3PendingAudio) { playSong(s3PendingAudio); s3PendingAudio = null; }
     for (const t of e.changedTouches) {
         if (t.identifier !== joystick.touchId) {
             // Non-joystick touch = star attraction finger
@@ -1767,8 +1769,7 @@ function onScene3TouchEndAll(e) {
 
 function onScene3MouseDown(e) {
     s3PointerDown = true; s3MouseX = e.clientX; s3MouseY = e.clientY;
-    // Resume audio if autoplay was blocked on entry
-    if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => { });
+    if (s3PendingAudio) { playSong(s3PendingAudio); s3PendingAudio = null; }
 }
 function onScene3MouseUp() { s3PointerDown = false; }
 
@@ -1797,18 +1798,10 @@ function enterScene3() {
         darkWhispers.collected = true;
         collectedSongs.push(darkWhispers);
     }
-    if (darkWhispers) {
-        playSong(darkWhispers);
-        // Browsers may block autoplay if triggered from rAF (not a direct gesture).
-        // Install a one-time listener on ANY interaction so it resumes on first keypress,
-        // click, or touch — whichever comes first.
-        const resumeAudio = () => {
-            if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => {});
-        };
-        document.addEventListener('keydown',   resumeAudio, { once: true });
-        document.addEventListener('click',     resumeAudio, { once: true });
-        document.addEventListener('touchstart',resumeAudio, { once: true });
-    }
+    // Don't call playSong here — we're inside requestAnimationFrame, not a user gesture,
+    // so browsers will block autoplay. Instead flag it; the keydown/mousedown/touch
+    // handlers below will call playSong on the very first interaction in scene 3.
+    if (darkWhispers) s3PendingAudio = darkWhispers;
 
     s3.addEventListener('touchstart', onScene3TouchAll, { passive: false });
     s3.addEventListener('touchmove', onScene3TouchMoveAll, { passive: false });
