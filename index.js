@@ -318,6 +318,8 @@ const WALL_T = 8;      // wall thickness (px)
 const DOOR_GAP = 80;     // doorway opening width
 const PLAYER_RADIUS = 24;     // player circle radius
 const PLAYER_SPEED = 3;      // px per frame
+const WALK_BOUNCE_STRENGTH = 0.08; // Squeeze/stretch animation strength (0.0=none, 0.2=strong)
+const WALK_BOUNCE_SPEED = 0.35;    // Squeeze/stretch animation speed
 const EXHIBIT_W = 40;     // exhibit frame width
 const EXHIBIT_H = 50;     // exhibit frame height
 const EXHIBIT_DIST = 80;     // interaction trigger distance
@@ -771,6 +773,7 @@ function update() {
 
     // Collision resolution
     if (dx !== 0 || dy !== 0) {
+        player.walkTime = (player.walkTime || 0) + 1;
         const resolved = resolveMove(player.x + dx, player.y + dy);
         player.x = resolved.x;
         player.y = resolved.y;
@@ -782,6 +785,8 @@ function update() {
         } else if (dy !== 0) {
             player.dir = dy > 0 ? 'down' : 'up';
         }
+    } else {
+        player.walkTime = 0;
     }
 
     // --- Room entry tracking (reveal while inside, hide again when leaving) ---
@@ -1139,12 +1144,25 @@ function drawPlayer() {
     const { x, y, dir } = player;
     const R = PLAYER_RADIUS;
 
+    // Squeeze/stretch animation scales
+    let scaleX = 1, scaleY = 1;
+    if (player.walkTime > 0) {
+        const bounce = Math.sin(player.walkTime * WALK_BOUNCE_SPEED) * WALK_BOUNCE_STRENGTH;
+        scaleX = 1 + bounce;
+        scaleY = 1 - bounce;
+    }
+
     // ── Sprite path ──────────────────────────────────────────────────────────
     const sprite = playerSprites[dir];
     if (sprite) {
         const sw = R * 3.5;
         const sh = R * 3.5;
         gCtx.save();
+
+        gCtx.translate(x, y);
+        gCtx.scale(scaleX, scaleY);
+        gCtx.translate(-x, -y);
+
         gCtx.shadowBlur = 10;
         gCtx.shadowColor = 'rgba(0,0,0,0.15)';
         gCtx.drawImage(sprite, x - sw / 2, y - sh / 2, sw, sh);
@@ -1155,6 +1173,9 @@ function drawPlayer() {
     // ── Fallback: drawn cat ──────────────────────────────────────────────────
 
     gCtx.save();
+    gCtx.translate(x, y);
+    gCtx.scale(scaleX, scaleY);
+    gCtx.translate(-x, -y);
 
     // Shadow
     gCtx.shadowBlur = 10;
@@ -1685,10 +1706,13 @@ function updateScene3Movement() {
 
     const len = Math.hypot(dx, dy);
     if (len > 0) {
+        player.walkTime = (player.walkTime || 0) + 1;
         dx = (dx / len) * PLAYER_SPEED;
         dy = (dy / len) * PLAYER_SPEED;
         if (Math.abs(dx) > Math.abs(dy)) player.dir = dx > 0 ? 'right' : 'left';
         else player.dir = dy > 0 ? 'down' : 'up';
+    } else {
+        player.walkTime = 0;
     }
 
     // Resolve against scene3 walls (swap wallRects temporarily)
