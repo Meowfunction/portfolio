@@ -1514,8 +1514,20 @@ let catDialogueIdx  = 0;   // next line to show
 let catBubbleLine   = -1;  // line currently displayed (-1 = hidden)
 let catBubbleTimer  = 0;   // frames remaining
 let catRevealIdx    = 0;   // how many chars of the current line have been revealed
+let catFloatFrame   = 0;   // ticks every frame for float oscillation
+let catShakeTimer   = 0;   // frames remaining for left-right shake
 const catNpcImg = new Image();
 catNpcImg.src = 'images/catSleep.png';
+
+// ---- Plush cat NPC (scene 3, centre) ----
+const PLUSH_W = 130, PLUSH_H = 130, PLUSH_HIT_R = 70;
+const PLUSH_LINES = ["What is PARK reversed?", "WEEEEEEE!", "I LOVE DOG FOOD!"];
+let plushRotation   = 0;
+let plushBubbleText = '';
+let plushBubbleTimer = 0;
+let plushRevealIdx  = 0;
+const plushImg = new Image();
+plushImg.src = 'images/catPlush.png';
 const scene3Stars = [];
 
 // Scene 3 boundary walls (same OB, but no bottom wall — walking off bottom returns)
@@ -1675,11 +1687,25 @@ function updateScene3Movement() {
 
 function drawCatNPC() {
     const cx = OB.left + 160, cy = OB.top + 210;
+
+    // Float: gentle vertical oscillation
+    catFloatFrame++;
+    const floatY = Math.sin(catFloatFrame * 0.04) * 7;
+
+    // Shake: fast horizontal jitter, decays over ~30 frames
+    if (catShakeTimer > 0) catShakeTimer--;
+    const shakeX = catShakeTimer > 0
+        ? Math.sin(catShakeTimer * 1.6) * (catShakeTimer / 30) * 10
+        : 0;
+
+    const drawX = cx + shakeX;
+    const drawY = cy + floatY;
+
     // Cat image
     gCtx.save();
-    gCtx.shadowBlur = 0; // ensure star shadows don't bleed
+    gCtx.shadowBlur = 0;
     if (catNpcImg.complete && catNpcImg.naturalWidth > 0) {
-        gCtx.drawImage(catNpcImg, cx - CAT_NPC_W / 2, cy - CAT_NPC_H / 2, CAT_NPC_W, CAT_NPC_H);
+        gCtx.drawImage(catNpcImg, drawX - CAT_NPC_W / 2, drawY - CAT_NPC_H / 2, CAT_NPC_W, CAT_NPC_H);
     }
     gCtx.restore();
 
@@ -1703,8 +1729,8 @@ function drawCatNPC() {
         const padX = 14, padY = 10;
         const bw = maxW + padX * 2;
         const bh = allLines.length * lineH + padY * 2;
-        const bx = cx - bw / 2;
-        const by = cy - CAT_NPC_H / 2 - bh - 16;
+        const bx = drawX - bw / 2;
+        const by = drawY - CAT_NPC_H / 2 - bh - 16;
 
         // Bubble background
         gCtx.fillStyle = 'rgba(255,255,255,0.95)';
@@ -1716,9 +1742,9 @@ function drawCatNPC() {
 
         // Tail triangle
         gCtx.beginPath();
-        gCtx.moveTo(cx - 8, by + bh);
-        gCtx.lineTo(cx + 8, by + bh);
-        gCtx.lineTo(cx, by + bh + 13);
+        gCtx.moveTo(drawX - 8, by + bh);
+        gCtx.lineTo(drawX + 8, by + bh);
+        gCtx.lineTo(drawX, by + bh + 13);
         gCtx.closePath();
         gCtx.fillStyle = 'rgba(255,255,255,0.95)';
         gCtx.fill();
@@ -1729,7 +1755,7 @@ function drawCatNPC() {
         gCtx.fillStyle = '#222';
         gCtx.textAlign = 'center';
         gCtx.textBaseline = 'top';
-        revealedLines.forEach((l, i) => gCtx.fillText(l, cx, by + padY + i * lineH));
+        revealedLines.forEach((l, i) => gCtx.fillText(l, drawX, by + padY + i * lineH));
 
         gCtx.restore();
     }
@@ -1741,8 +1767,74 @@ function tappedCat(screenX, screenY) {
     if (Math.hypot(wx - cx, wy - cy) > CAT_HIT_R) return;
     catBubbleLine  = catDialogueIdx;
     catDialogueIdx = (catDialogueIdx + 1) % CAT_LINES.length;
-    catBubbleTimer = 320; // ~5 s at 60 fps
-    catRevealIdx   = 0;   // restart typewriter
+    catBubbleTimer = 320;
+    catRevealIdx   = 0;
+    catShakeTimer  = 30; // trigger shake
+}
+
+// ---- Plush cat NPC (scene 3, centre) ----
+
+function drawPlushNPC() {
+    const cx = (OB.left + OB.right) / 2;
+    const cy = (OB.top + OB.bottom) / 2;
+
+    // Spin continuously
+    plushRotation += 0.05;
+
+    gCtx.save();
+    gCtx.shadowBlur = 0;
+    gCtx.translate(cx, cy);
+    gCtx.rotate(plushRotation);
+    if (plushImg.complete && plushImg.naturalWidth > 0) {
+        gCtx.drawImage(plushImg, -PLUSH_W / 2, -PLUSH_H / 2, PLUSH_W, PLUSH_H);
+    }
+    gCtx.restore();
+
+    // Speech bubble
+    if (plushBubbleTimer > 0 && plushBubbleText) {
+        plushBubbleTimer--;
+        if (plushRevealIdx < plushBubbleText.length && plushBubbleTimer % 2 === 0) plushRevealIdx++;
+
+        const fSize = 15;
+        gCtx.save();
+        gCtx.shadowBlur = 0;
+        gCtx.font = `${fSize}px Dream, sans-serif`;
+        const lineH = fSize + 7;
+        const bw = gCtx.measureText(plushBubbleText).width + 28;
+        const bh = lineH + 20;
+        const bx = cx - bw / 2;
+        const by = cy - PLUSH_H / 2 - bh - 16;
+
+        gCtx.fillStyle = 'rgba(255,255,255,0.95)';
+        gCtx.strokeStyle = 'rgba(160,160,160,0.6)';
+        gCtx.lineWidth = 1.2;
+        gCtx.beginPath();
+        gCtx.roundRect(bx, by, bw, bh, 10);
+        gCtx.fill(); gCtx.stroke();
+
+        gCtx.beginPath();
+        gCtx.moveTo(cx - 8, by + bh);
+        gCtx.lineTo(cx + 8, by + bh);
+        gCtx.lineTo(cx, by + bh + 13);
+        gCtx.closePath();
+        gCtx.fillStyle = 'rgba(255,255,255,0.95)';
+        gCtx.fill();
+
+        gCtx.fillStyle = '#222';
+        gCtx.textAlign = 'center';
+        gCtx.textBaseline = 'top';
+        gCtx.fillText(plushBubbleText.substring(0, plushRevealIdx), cx, by + 10);
+        gCtx.restore();
+    }
+}
+
+function tappedPlush(screenX, screenY) {
+    const wx = screenX + camX, wy = screenY + camY;
+    const cx = (OB.left + OB.right) / 2, cy = (OB.top + OB.bottom) / 2;
+    if (Math.hypot(wx - cx, wy - cy) > PLUSH_HIT_R) return;
+    plushBubbleText  = PLUSH_LINES[Math.floor(Math.random() * PLUSH_LINES.length)];
+    plushBubbleTimer = 320;
+    plushRevealIdx   = 0;
 }
 
 // ---- Render ----
@@ -1784,8 +1876,11 @@ function renderScene3() {
         gCtx.restore();
     }
 
-    // Sleeping cat NPC
+    // Sleeping cat NPC (top-left)
     drawCatNPC();
+
+    // Plush cat NPC (centre)
+    drawPlushNPC();
 
     // Player (reuses scene 2 drawPlayer which uses gCtx)
     drawPlayer();
@@ -1829,6 +1924,7 @@ function scene3Loop() {
 function onScene3Click(e) {
     if (e.clientY > window.innerHeight - 52) { exitScene3(); return; }
     tappedCat(e.clientX, e.clientY);
+    tappedPlush(e.clientX, e.clientY);
 }
 
 // Unified touch handler — feeds joystick AND tracks pointer for star attraction
@@ -1861,9 +1957,10 @@ function onScene3TouchEndAll(e) {
     if (e.touches.length === 0 || (e.touches.length === 1 && joystick.active)) {
         s3PointerDown = false;
     }
-    // Check cat tap for each lifted finger
+    // Check NPC taps for each lifted finger
     for (const t of e.changedTouches) {
         tappedCat(t.clientX, t.clientY);
+        tappedPlush(t.clientX, t.clientY);
     }
 }
 
