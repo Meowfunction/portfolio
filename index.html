@@ -4,14 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome | Maple's Portfolio</title>
-    <!-- Use Outfit and Inter for modern, premium typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
-    <link rel="icon" href="images/sumOfMeow.JPG">
+    <title>freezer</title>
+    <link rel="stylesheet" href="index.css?v=3">
+    <link rel="icon" href="images/SumOfMeow2.PNG">
     <meta name="description" content="Maple's Interactive Portfolio Website.">
 </head>
 
@@ -45,21 +40,13 @@
     <!-- Scene 2: Game Canvas -->
     <canvas id="game-canvas"></canvas>
 
+    <!-- Scene 3: Star Field Canvas -->
+    <canvas id="scene3-canvas"></canvas>
+
     <!-- Scene 2: Song Player Widget (top-right vinyl disk + dropdown) -->
     <div id="song-player">
         <div id="vinyl-wrapper" title="Music player">
-            <svg id="vinyl-disk" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                <!-- Outer disk body -->
-                <circle cx="30" cy="30" r="29" fill="#1a1a1a" stroke="#2d2d2d" stroke-width="1"/>
-                <!-- Groove rings -->
-                <circle cx="30" cy="30" r="24" fill="none" stroke="#262626" stroke-width="1.5"/>
-                <circle cx="30" cy="30" r="19" fill="none" stroke="#262626" stroke-width="1.5"/>
-                <circle cx="30" cy="30" r="14" fill="none" stroke="#262626" stroke-width="1.5"/>
-                <!-- Centre label (brand red) -->
-                <circle cx="30" cy="30" r="9" fill="#FF4215"/>
-                <!-- Spindle hole -->
-                <circle cx="30" cy="30" r="2.5" fill="#111"/>
-            </svg>
+            <img id="vinyl-disk" src="images/vinyl.PNG" alt="vinyl">
         </div>
         <div id="song-dropdown"></div>
     </div>
@@ -79,7 +66,25 @@
         </div>
     </div>
 
-    <script src="index.js"></script>
+    <!-- Scene 2: Artwork Modal -->
+    <div id="artwork-modal" class="artwork-modal-overlay">
+        <div class="artwork-page">
+            <div class="artwork-title" id="artwork-title"></div>
+            <img id="artwork-img" src="" alt="artwork">
+            <button class="choice-btn" id="artwork-close-btn">Close ✕</button>
+        </div>
+    </div>
+
+    <!-- Scene 2: Poem Page Modal -->
+    <div id="poem-modal" class="poem-modal-overlay">
+        <div class="poem-page">
+            <div class="poem-numeral" id="poem-numeral"></div>
+            <pre class="poem-body" id="poem-body"></pre>
+            <button class="choice-btn poem-close-btn" id="poem-close-btn">Close ✕</button>
+        </div>
+    </div>
+
+    <script src="index.js?v=3"></script>
 </body>
 
 </html>
