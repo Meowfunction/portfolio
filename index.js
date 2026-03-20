@@ -1503,7 +1503,7 @@ let s3PointerDown = false;                     // true only while held / finger 
 let s3PendingAudio = null;                     // song to play on first gesture in scene 3
 
 // ---- Sleeping cat NPC (scene 3, top-left) ----
-const CAT_NPC_W = 240, CAT_NPC_H = 240, CAT_HIT_R = 110;
+const CAT_NPC_W = 180, CAT_NPC_H = 180, CAT_HIT_R = 82;
 const CAT_LINES = [
     "Sleep is the best remedy\nfor the day. Let me sleep.",
     "Don't talk to me. You don't\nknow how tiring it is to be\nin charge of the freezer.",
@@ -1521,7 +1521,7 @@ catNpcImg.src = 'images/catSleep.png';
 
 // ---- Plush cat NPC (scene 3, centre) ----
 const PLUSH_W = 130, PLUSH_H = 130, PLUSH_HIT_R = 70;
-const PLUSH_LINES = ["What is PARK reversed?", "WEEEEEEE!", "I LOVE DOG FOOD!"];
+const PLUSH_LINES = ["What is PARK reversed?", "WEEEEEEE!", "I LOVE DOG FOOD!", "MEOWFUNCTION is a BAD FUNCTION!", "Miao miao miao miao", "Woof woof woof wooof"];
 let plushRotation   = 0;
 let plushBubbleText = '';
 let plushBubbleTimer = 0;
@@ -1779,7 +1779,7 @@ function drawPlushNPC() {
     const cy = (OB.top + OB.bottom) / 2;
 
     // Spin continuously
-    plushRotation += 0.05;
+    plushRotation += 0.10;
 
     gCtx.save();
     gCtx.shadowBlur = 0;
