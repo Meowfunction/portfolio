@@ -1549,15 +1549,15 @@ const scene3WallRects = [
     { x: (OB.left + OB.right) / 2 - 50, y: (OB.top + OB.bottom) / 2 - 45, w: 100, h: 90 }, // catPlush collision
 
     // Passage corridor walls
-    { x: P_X - WALL_T, y: OB.top - P_LEN, w: WALL_T, h: P_LEN },
-    { x: P_X + P_W, y: OB.top - P_LEN, w: WALL_T, h: P_LEN },
+    { x: P_X - WALL_T, y: OB.top - P_LEN, w: WALL_T, h: P_LEN, isSecretWall: true },
+    { x: P_X + P_W, y: OB.top - P_LEN, w: WALL_T, h: P_LEN, isSecretWall: true },
 
     // Secret room walls
-    { x: S3R_X - WALL_T, y: S3R_Y - WALL_T, w: S3R_W + WALL_T * 2, h: WALL_T }, // top
-    { x: S3R_X - WALL_T, y: S3R_Y, w: Math.abs(P_X - S3R_X) + WALL_T, h: WALL_T }, // bottom left of room
-    { x: P_X + P_W, y: S3R_Y, w: Math.abs((S3R_X + S3R_W) - (P_X + P_W)) + WALL_T, h: WALL_T }, // bottom right of room
-    { x: S3R_X - WALL_T, y: S3R_Y, w: WALL_T, h: S3R_H }, // left
-    { x: S3R_X + S3R_W, y: S3R_Y, w: WALL_T, h: S3R_H } // right
+    { x: S3R_X - WALL_T, y: S3R_Y - WALL_T, w: S3R_W + WALL_T * 2, h: WALL_T, isSecretWall: true }, // top
+    { x: S3R_X - WALL_T, y: S3R_Y + S3R_H, w: P_X - (S3R_X - WALL_T), h: WALL_T, isSecretWall: true }, // bottom left of room
+    { x: P_X + P_W, y: S3R_Y + S3R_H, w: (S3R_X + S3R_W + WALL_T) - (P_X + P_W), h: WALL_T, isSecretWall: true }, // bottom right of room
+    { x: S3R_X - WALL_T, y: S3R_Y - WALL_T, w: WALL_T, h: S3R_H + WALL_T * 2, isSecretWall: true }, // left
+    { x: S3R_X + S3R_W, y: S3R_Y - WALL_T, w: WALL_T, h: S3R_H + WALL_T * 2, isSecretWall: true } // right
 ];
 
 // ---- Rounded 5-pointed star ----
@@ -1913,6 +1913,15 @@ function renderScene3() {
     gCtx.textAlign = 'center';
     gCtx.textBaseline = 'middle';
     gCtx.fillText('https://youtube.com/@maple_meowfunction?si=OAr47RfY97YmuyKO', S3R_X + S3R_W / 2, S3R_Y + S3R_H / 2);
+
+    // Paint secret room boundaries white
+    gCtx.lineWidth = 2;
+    gCtx.strokeStyle = 'white';
+    for (const wall of scene3WallRects) {
+        if (wall.isSecretWall) {
+            gCtx.strokeRect(wall.x, wall.y, wall.w, wall.h);
+        }
+    }
     gCtx.restore();
 
     // Player (reuses scene 2 drawPlayer which uses gCtx)
