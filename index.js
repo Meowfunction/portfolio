@@ -407,11 +407,11 @@ let songDropdownOpen = false;
 // entered: revealed when player walks in; solid rooms are always open (ice cream counter)
 const ROOMS = [
     {
-        id: 'culinary', label: 'culinary', x: 160, y: 260, w: 470, h: 370,
+        id: 'culinary', label: 'culinary', x: 160, y: 220, w: 470, h: 370,
         color: '#FFF3DC', opaqueColor: '#FFD366', doorSide: 'bottom', doorGapCx: 130 + 470 * 0.78, entered: false
     },
     {
-        id: 'design', label: 'design room', x: 830, y: 260, w: 470, h: 370,
+        id: 'design', label: 'design room', x: 830, y: 220, w: 470, h: 370,
         color: '#EDFFF0', opaqueColor: '#5EFFA0', doorSide: 'bottom', doorGapCx: 800 + 470 * 0.22, entered: false
     },
     {
@@ -428,15 +428,15 @@ const ROOMS = [
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
     // Culinary  (x: 160–630, y: 260–630) — top wall & left wall
-    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 215, y: 295, imgSrc: 'rooms/culinary/BananaMage.png' },
-    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 325, y: 295, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
-    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 485, y: 295, imgSrc: 'rooms/culinary/Hamwich.png' },
+    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 245, y: 295, imgSrc: 'rooms/culinary/BananaMage.png' },
+    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 355, y: 295, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
+    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 515, y: 295, imgSrc: 'rooms/culinary/Hamwich.png' },
     { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 165, y: 330, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
     { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 165, y: 470, imgSrc: 'rooms/culinary/ItalyPasta.png' },
     // Design    (x: 830–1300, y: 260–630) — top wall & right wall
-    { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 885, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
-    { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1005, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
-    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1165, y: 295, imgSrc: 'rooms/design/GoldenRatio.png' },
+    { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 915, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
+    { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1035, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
+    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1195, y: 295, imgSrc: 'rooms/design/GoldenRatio.png' },
     { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 330, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
     { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
@@ -1540,7 +1540,7 @@ function drawStar5Rounded(ctx, cx, cy, outerR, innerR) {
 function initScene3Stars() {
     scene3Stars.length = 0;
     const pad = 60;
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 60; i++) {
         const outerR = 4 + Math.random() * 14;
         const hx = OB.left + pad + Math.random() * (OB.right - OB.left - pad * 2);
         const hy = OB.top + pad + Math.random() * (OB.bottom - OB.top - pad * 2);
@@ -1680,8 +1680,8 @@ function renderScene3() {
     for (const s of scene3Stars) {
         gCtx.save();
         gCtx.globalAlpha = s.opacity;
-        gCtx.shadowBlur = s.outerR * 1.8;
-        gCtx.shadowColor = 'rgba(255,255,255,0.7)';
+        gCtx.shadowBlur = 6;
+        gCtx.shadowColor = 'rgba(255,255,255,0.6)';
         gCtx.translate(s.x, s.y);
         gCtx.rotate(s.rotation);
         drawStar5Rounded(gCtx, 0, 0, s.outerR, s.innerR);
@@ -1708,16 +1708,19 @@ function renderScene3() {
     gCtx = prevCtx;
 }
 
+const _vinylDisk = () => document.getElementById('vinyl-disk'); // cached lazily
+let _vinylDiskEl = null;
+
 function scene3Loop() {
     if (!scene3Active) return;
     updateScene3Movement();
     updateScene3Stars();
     renderScene3();
     // Keep vinyl spinning in sync while scene 2 update() is paused
-    const diskEl = document.getElementById('vinyl-disk');
-    if (diskEl) {
+    if (!_vinylDiskEl) _vinylDiskEl = _vinylDisk();
+    if (_vinylDiskEl) {
         const isPlaying = currentAudio && !currentAudio.paused && !currentAudio.ended;
-        diskEl.classList.toggle('spinning', !!isPlaying);
+        _vinylDiskEl.classList.toggle('spinning', !!isPlaying);
     }
     requestAnimationFrame(scene3Loop);
 }
@@ -1794,7 +1797,18 @@ function enterScene3() {
         darkWhispers.collected = true;
         collectedSongs.push(darkWhispers);
     }
-    if (darkWhispers) playSong(darkWhispers);
+    if (darkWhispers) {
+        playSong(darkWhispers);
+        // Browsers may block autoplay if triggered from rAF (not a direct gesture).
+        // Install a one-time listener on ANY interaction so it resumes on first keypress,
+        // click, or touch — whichever comes first.
+        const resumeAudio = () => {
+            if (currentAudio && currentAudio.paused) currentAudio.play().catch(() => {});
+        };
+        document.addEventListener('keydown',   resumeAudio, { once: true });
+        document.addEventListener('click',     resumeAudio, { once: true });
+        document.addEventListener('touchstart',resumeAudio, { once: true });
+    }
 
     s3.addEventListener('touchstart', onScene3TouchAll, { passive: false });
     s3.addEventListener('touchmove', onScene3TouchMoveAll, { passive: false });
