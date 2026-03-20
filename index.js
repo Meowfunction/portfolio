@@ -1541,14 +1541,18 @@ function initScene3Stars() {
     const pad = 60;
     for (let i = 0; i < 120; i++) {
         const outerR = 4 + Math.random() * 14;
+        const hx = OB.left  + pad + Math.random() * (OB.right  - OB.left  - pad * 2);
+        const hy = OB.top   + pad + Math.random() * (OB.bottom - OB.top   - pad * 2);
         scene3Stars.push({
-            x:  OB.left  + pad + Math.random() * (OB.right  - OB.left  - pad * 2),
-            y:  OB.top   + pad + Math.random() * (OB.bottom - OB.top   - pad * 2),
+            x: hx, y: hy,
+            homeX: hx, homeY: hy,
             vx: (Math.random() - 0.5) * 0.5,
             vy: (Math.random() - 0.5) * 0.5,
             outerR,
             innerR:  outerR * 0.38,
             opacity: 0.5 + Math.random() * 0.5,
+            rotation: Math.random() * Math.PI * 2,
+            rotationSpeed: (Math.random() - 0.5) * 0.018,
         });
     }
 }
@@ -1557,15 +1561,17 @@ function updateScene3Stars() {
     // Convert screen-space pointer to world space for attraction
     const worldPX = s3MouseX + camX;
     const worldPY = s3MouseY + camY;
-    const ATTRACT_R = 220, ATTRACT_F = 0.05, MAX_SPD = 3.5, DAMP = 0.97;
+    const ATTRACT_R = 220, ATTRACT_F = 0.05, MAX_SPD = 3.5;
+    const DAMP_FREE = 0.95, DAMP_ATTRACT = 0.97;
+    const SPRING_K = 0.008;
 
     for (const s of scene3Stars) {
-        // Gentle brownian drift
-        s.vx += (Math.random() - 0.5) * 0.04;
-        s.vy += (Math.random() - 0.5) * 0.04;
-
-        // Attraction — only while pointer is held down
         if (s3PointerDown) {
+            // Gentle brownian drift while attracted
+            s.vx += (Math.random() - 0.5) * 0.04;
+            s.vy += (Math.random() - 0.5) * 0.04;
+
+            // Attraction force
             const dx = worldPX - s.x, dy = worldPY - s.y;
             const d = Math.hypot(dx, dy);
             if (d > 0 && d < ATTRACT_R) {
@@ -1573,20 +1579,35 @@ function updateScene3Stars() {
                 s.vx += (dx / d) * f;
                 s.vy += (dy / d) * f;
             }
+
+            s.vx *= DAMP_ATTRACT; s.vy *= DAMP_ATTRACT;
+        } else {
+            // Spring pull back to home position
+            s.vx += (s.homeX - s.x) * SPRING_K;
+            s.vy += (s.homeY - s.y) * SPRING_K;
+            // Very slight brownian so it doesn't look frozen
+            s.vx += (Math.random() - 0.5) * 0.008;
+            s.vy += (Math.random() - 0.5) * 0.008;
+
+            s.vx *= DAMP_FREE; s.vy *= DAMP_FREE;
         }
 
-        // Damp + clamp
-        s.vx *= DAMP; s.vy *= DAMP;
+        // Clamp speed
         const spd = Math.hypot(s.vx, s.vy);
         if (spd > MAX_SPD) { s.vx = s.vx / spd * MAX_SPD; s.vy = s.vy / spd * MAX_SPD; }
 
         s.x += s.vx; s.y += s.vy;
 
-        // Wrap within world bounds
-        if (s.x < OB.left  - s.outerR) s.x = OB.right  + s.outerR;
-        if (s.x > OB.right + s.outerR) s.x = OB.left   - s.outerR;
-        if (s.y < OB.top   - s.outerR) s.y = OB.bottom + s.outerR;
-        if (s.y > OB.bottom+ s.outerR) s.y = OB.top    - s.outerR;
+        // Rotation always ticks
+        s.rotation += s.rotationSpeed;
+
+        // Wrap within world bounds (only when attracted — springs handle free mode)
+        if (s3PointerDown) {
+            if (s.x < OB.left  - s.outerR) s.x = OB.right  + s.outerR;
+            if (s.x > OB.right + s.outerR) s.x = OB.left   - s.outerR;
+            if (s.y < OB.top   - s.outerR) s.y = OB.bottom + s.outerR;
+            if (s.y > OB.bottom+ s.outerR) s.y = OB.top    - s.outerR;
+        }
     }
 }
 
@@ -1660,7 +1681,9 @@ function renderScene3() {
         gCtx.globalAlpha = s.opacity;
         gCtx.shadowBlur  = s.outerR * 1.8;
         gCtx.shadowColor = 'rgba(255,255,255,0.7)';
-        drawStar5Rounded(gCtx, s.x, s.y, s.outerR, s.innerR);
+        gCtx.translate(s.x, s.y);
+        gCtx.rotate(s.rotation);
+        drawStar5Rounded(gCtx, 0, 0, s.outerR, s.innerR);
         gCtx.restore();
     }
 
