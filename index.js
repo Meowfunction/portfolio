@@ -476,9 +476,10 @@ EXHIBITS.forEach((ex, i) => { if (ex.iceImgIdx === undefined) ex.iceImgIdx = i %
 
 // ---- Song Collectibles (one per room, centred inside) ----
 const SONGS = [
-    { id: 's1', x: 365, y: 275, color: '#FFD215', collected: false, name: 'Minor Daisy Bell', file: 'music/minorDaisyBell.mp3', imgKey: 'daisy', roomId: 'culinary' },
-    { id: 's2', x: 365, y: 825, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea', roomId: 'illustration' },
-    { id: 's3', x: 1035, y: 275, color: '#157BFF', collected: false, name: 'A Space Odyssey', file: 'music/aSpaceOdyssey.mp3', imgKey: 'space', roomId: 'design' },
+    { id: 's1', x: 365, y: 275, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3',     imgKey: 'daisy', roomId: 'culinary' },
+    { id: 's2', x: 365, y: 825, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3',  imgKey: 'sea',   roomId: 'illustration' },
+    { id: 's3', x: 1035, y: 275, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3',      imgKey: 'space', roomId: 'design' },
+    { id: 's4', collected: true,                    name: 'Dark Whispers',                          file: 'music/darkWhispers.mp3' },
 ];
 
 // ---- Tap tracking (for paw-icon inspect on mobile) ----
@@ -1424,7 +1425,7 @@ function rebuildDropdown() {
     if (!dropdownEl) return;
 
     dropdownEl.innerHTML = '';
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < SONGS.length; i++) {
         const song = SONGS[i];
         const item = document.createElement('div');
         item.className = 'song-item';
@@ -1762,7 +1763,6 @@ function enterScene3() {
     scene3Active = true;
 
     gameCanvas2.style.display = 'none';
-    document.getElementById('song-player').style.display = 'none';
     document.getElementById('interact-hint').style.display = 'none';
 
     const s3 = document.getElementById('scene3-canvas');
@@ -1775,6 +1775,13 @@ function enterScene3() {
     player.x = WORLD_W / 2;
     player.y = OB.bottom - PLAYER_RADIUS - 30;
     player.dir = 'up';
+
+    // Play Dark Whispers — add to collected list if not already there
+    const darkWhispers = SONGS.find(s => s.id === 's4');
+    if (darkWhispers && !collectedSongs.includes(darkWhispers)) {
+        collectedSongs.push(darkWhispers);
+    }
+    if (darkWhispers) playSong(darkWhispers);
 
     s3.addEventListener('touchstart', onScene3TouchAll,    { passive: false });
     s3.addEventListener('touchmove',  onScene3TouchMoveAll, { passive: false });
@@ -1800,7 +1807,6 @@ function exitScene3() {
     window.removeEventListener('mouseup', onScene3MouseUp);
 
     gameCanvas2.style.display = 'block';
-    document.getElementById('song-player').style.display = 'flex';
 
     // Place player just inside the top of scene 2 (below the secret door)
     player.x = WORLD_W / 2;
