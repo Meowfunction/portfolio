@@ -1534,7 +1534,22 @@ const scene3Stars = [];
 const scene3WallRects = [
     { x: OB.left, y: OB.top, w: OB.right - OB.left, h: WALL_T }, // top
     { x: OB.left, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }, // left
-    { x: OB.right, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }, // right
+    { x: OB.right, y: OB.top + 100, w: WALL_T, h: OB.bottom - OB.top - 100 }, // right (with gap)
+
+    // Cat collisions
+    { x: OB.left + 160 - 70, y: OB.top + 210 - 70, w: 140, h: 140 }, // catSleep
+    { x: (OB.left + OB.right) / 2 - 60, y: (OB.top + OB.bottom) / 2 - 60, w: 120, h: 120 }, // catPlush
+
+    // Passage walls (horizontal)
+    { x: OB.right, y: OB.top, w: 1500, h: WALL_T }, // passage top
+    { x: OB.right, y: OB.top + 100, w: 1500, h: WALL_T }, // passage bottom
+
+    // Small square room (at x = OB.right + 1500)
+    { x: OB.right + 1500, y: OB.top - 150, w: 400, h: WALL_T }, // room top
+    { x: OB.right + 1500, y: OB.top + 250, w: 400, h: WALL_T }, // room bottom
+    { x: OB.right + 1900, y: OB.top - 150, w: WALL_T, h: 400 + WALL_T }, // room right
+    { x: OB.right + 1500, y: OB.top - 150, w: WALL_T, h: 150 }, // room left (top half)
+    { x: OB.right + 1500, y: OB.top + 100, w: WALL_T, h: 150 }, // room left (bottom half)
 ];
 
 // ---- Rounded 5-pointed star ----
@@ -1679,7 +1694,7 @@ function updateScene3Movement() {
     if (player.y > OB.bottom + PLAYER_RADIUS) { exitScene3(); return; }
 
     // Camera
-    camX = Math.max(0, Math.min(player.x - vw / 2, WORLD_W - vw));
+    camX = Math.max(0, player.x - vw / 2);
     camY = Math.max(0, Math.min(player.y - vh / 2, WORLD_H - vh));
 }
 
@@ -1875,6 +1890,13 @@ function renderScene3() {
         drawStar5Rounded(gCtx, 0, 0, s.outerR, s.innerR);
         gCtx.restore();
     }
+
+    // Secret room text
+    gCtx.fillStyle = '#FFD215'; 
+    gCtx.font = '20px sans-serif'; 
+    gCtx.textAlign = 'center';
+    gCtx.textBaseline = 'middle';
+    gCtx.fillText("https://youtube.com/@maple_meowfunction?si=OAr47RfY97YmuyKO", OB.right + 1700, OB.top + 50);
 
     // Sleeping cat NPC (top-left)
     drawCatNPC();
