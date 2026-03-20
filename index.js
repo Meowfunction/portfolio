@@ -1510,46 +1510,54 @@ const CAT_LINES = [
     "Leave me alone, or I'll\nhaunt you at night!",
     "Zzz..."
 ];
-let catDialogueIdx  = 0;   // next line to show
-let catBubbleLine   = -1;  // line currently displayed (-1 = hidden)
-let catBubbleTimer  = 0;   // frames remaining
-let catRevealIdx    = 0;   // how many chars of the current line have been revealed
-let catFloatFrame   = 0;   // ticks every frame for float oscillation
-let catShakeTimer   = 0;   // frames remaining for left-right shake
+let catDialogueIdx = 0;   // next line to show
+let catBubbleLine = -1;  // line currently displayed (-1 = hidden)
+let catBubbleTimer = 0;   // frames remaining
+let catRevealIdx = 0;   // how many chars of the current line have been revealed
+let catFloatFrame = 0;   // ticks every frame for float oscillation
+let catShakeTimer = 0;   // frames remaining for left-right shake
 const catNpcImg = new Image();
 catNpcImg.src = 'images/catSleep.png';
 
 // ---- Plush cat NPC (scene 3, centre) ----
 const PLUSH_W = 130, PLUSH_H = 130, PLUSH_HIT_R = 70;
 const PLUSH_LINES = ["What is PARK reversed?", "WEEEEEEE!", "I LOVE DOG FOOD!", "MEOWFUNCTION is a BAD FUNCTION!", "Miao miao miao miao", "Woof woof woof wooof"];
-let plushRotation   = 0;
+let plushRotation = 0;
 let plushBubbleText = '';
 let plushBubbleTimer = 0;
-let plushRevealIdx  = 0;
+let plushRevealIdx = 0;
 const plushImg = new Image();
 plushImg.src = 'images/catPlush.png';
 const scene3Stars = [];
 
 // Scene 3 boundary walls (same OB, but no bottom wall — walking off bottom returns)
+const P_X = OB.right - 140; // passage X
+const P_W = 140; // passage width
+const P_LEN = 1200; // length of one screen (~1200px)
+const S3R_W = 400; // room width
+const S3R_H = 400; // room height
+const S3R_X = P_X + P_W / 2 - S3R_W / 2;
+const S3R_Y = OB.top - P_LEN - S3R_H;
+
 const scene3WallRects = [
-    { x: OB.left, y: OB.top, w: OB.right - OB.left, h: WALL_T }, // top
+    // Top wall split to create passage at top-right
+    { x: OB.left, y: OB.top, w: P_X - OB.left, h: WALL_T },
+    { x: P_X + P_W, y: OB.top, w: OB.right - (P_X + P_W), h: WALL_T },
     { x: OB.left, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }, // left
-    { x: OB.right, y: OB.top + 100, w: WALL_T, h: OB.bottom - OB.top - 100 }, // right (with gap)
+    { x: OB.right, y: OB.top, w: WALL_T, h: OB.bottom - OB.top }, // right
+    { x: OB.left + 160 - 70, y: OB.top + 210 - 70, w: 140, h: 140 }, // catSleep collision
+    { x: (OB.left + OB.right) / 2 - 50, y: (OB.top + OB.bottom) / 2 - 45, w: 100, h: 90 }, // catPlush collision
 
-    // Cat collisions
-    { x: OB.left + 160 - 70, y: OB.top + 210 - 70, w: 140, h: 140 }, // catSleep
-    { x: (OB.left + OB.right) / 2 - 60, y: (OB.top + OB.bottom) / 2 - 60, w: 120, h: 120 }, // catPlush
+    // Passage corridor walls
+    { x: P_X - WALL_T, y: OB.top - P_LEN, w: WALL_T, h: P_LEN },
+    { x: P_X + P_W, y: OB.top - P_LEN, w: WALL_T, h: P_LEN },
 
-    // Passage walls (horizontal)
-    { x: OB.right, y: OB.top, w: 1500, h: WALL_T }, // passage top
-    { x: OB.right, y: OB.top + 100, w: 1500, h: WALL_T }, // passage bottom
-
-    // Small square room (at x = OB.right + 1500)
-    { x: OB.right + 1500, y: OB.top - 150, w: 400, h: WALL_T }, // room top
-    { x: OB.right + 1500, y: OB.top + 250, w: 400, h: WALL_T }, // room bottom
-    { x: OB.right + 1900, y: OB.top - 150, w: WALL_T, h: 400 + WALL_T }, // room right
-    { x: OB.right + 1500, y: OB.top - 150, w: WALL_T, h: 150 }, // room left (top half)
-    { x: OB.right + 1500, y: OB.top + 100, w: WALL_T, h: 150 }, // room left (bottom half)
+    // Secret room walls
+    { x: S3R_X - WALL_T, y: S3R_Y - WALL_T, w: S3R_W + WALL_T * 2, h: WALL_T }, // top
+    { x: S3R_X - WALL_T, y: S3R_Y, w: Math.abs(P_X - S3R_X) + WALL_T, h: WALL_T }, // bottom left of room
+    { x: P_X + P_W, y: S3R_Y, w: Math.abs((S3R_X + S3R_W) - (P_X + P_W)) + WALL_T, h: WALL_T }, // bottom right of room
+    { x: S3R_X - WALL_T, y: S3R_Y, w: WALL_T, h: S3R_H }, // left
+    { x: S3R_X + S3R_W, y: S3R_Y, w: WALL_T, h: S3R_H } // right
 ];
 
 // ---- Rounded 5-pointed star ----
@@ -1694,7 +1702,7 @@ function updateScene3Movement() {
     if (player.y > OB.bottom + PLAYER_RADIUS) { exitScene3(); return; }
 
     // Camera
-    camX = Math.max(0, player.x - vw / 2);
+    camX = Math.max(0, Math.min(player.x - vw / 2, WORLD_W - vw));
     camY = Math.max(0, Math.min(player.y - vh / 2, WORLD_H - vh));
 }
 
@@ -1780,11 +1788,11 @@ function tappedCat(screenX, screenY) {
     const wx = screenX + camX, wy = screenY + camY;
     const cx = OB.left + 160, cy = OB.top + 210;
     if (Math.hypot(wx - cx, wy - cy) > CAT_HIT_R) return;
-    catBubbleLine  = catDialogueIdx;
+    catBubbleLine = catDialogueIdx;
     catDialogueIdx = (catDialogueIdx + 1) % CAT_LINES.length;
     catBubbleTimer = 320;
-    catRevealIdx   = 0;
-    catShakeTimer  = 30; // trigger shake
+    catRevealIdx = 0;
+    catShakeTimer = 30; // trigger shake
 }
 
 // ---- Plush cat NPC (scene 3, centre) ----
@@ -1847,9 +1855,9 @@ function tappedPlush(screenX, screenY) {
     const wx = screenX + camX, wy = screenY + camY;
     const cx = (OB.left + OB.right) / 2, cy = (OB.top + OB.bottom) / 2;
     if (Math.hypot(wx - cx, wy - cy) > PLUSH_HIT_R) return;
-    plushBubbleText  = PLUSH_LINES[Math.floor(Math.random() * PLUSH_LINES.length)];
+    plushBubbleText = PLUSH_LINES[Math.floor(Math.random() * PLUSH_LINES.length)];
     plushBubbleTimer = 320;
-    plushRevealIdx   = 0;
+    plushRevealIdx = 0;
 }
 
 // ---- Render ----
@@ -1891,18 +1899,20 @@ function renderScene3() {
         gCtx.restore();
     }
 
-    // Secret room text
-    gCtx.fillStyle = '#FFD215'; 
-    gCtx.font = '20px sans-serif'; 
-    gCtx.textAlign = 'center';
-    gCtx.textBaseline = 'middle';
-    gCtx.fillText("https://youtube.com/@maple_meowfunction?si=OAr47RfY97YmuyKO", OB.right + 1700, OB.top + 50);
-
     // Sleeping cat NPC (top-left)
     drawCatNPC();
 
     // Plush cat NPC (centre)
     drawPlushNPC();
+
+    // Secret room floor text
+    gCtx.save();
+    gCtx.fillStyle = 'yellow';
+    gCtx.font = '16px "Courier New", Courier, monospace'; // Normal font, not Dream font
+    gCtx.textAlign = 'center';
+    gCtx.textBaseline = 'middle';
+    gCtx.fillText('https://youtube.com/@maple_meowfunction?si=OAr47RfY97YmuyKO', S3R_X + S3R_W / 2, S3R_Y + S3R_H / 2);
+    gCtx.restore();
 
     // Player (reuses scene 2 drawPlayer which uses gCtx)
     drawPlayer();
