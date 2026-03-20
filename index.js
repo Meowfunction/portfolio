@@ -318,7 +318,7 @@ const WALL_T = 8;      // wall thickness (px)
 const DOOR_GAP = 80;     // doorway opening width
 const PLAYER_RADIUS = 24;     // player circle radius
 const PLAYER_SPEED = 3;      // px per frame
-const WALK_BOUNCE_STRENGTH = 0.08; // Squeeze/stretch animation strength (0.0=none, 0.2=strong)
+const WALK_BOUNCE_STRENGTH = 0.05; // Squeeze/stretch animation strength (0.0=none, 0.2=strong)
 const WALK_BOUNCE_SPEED = 0.35;    // Squeeze/stretch animation speed
 const EXHIBIT_W = 40;     // exhibit frame width
 const EXHIBIT_H = 50;     // exhibit frame height
