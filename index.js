@@ -1912,16 +1912,14 @@ function renderScene3() {
     gCtx.font = '16px "Courier New", Courier, monospace'; // Normal font, not Dream font
     gCtx.textAlign = 'center';
     gCtx.textBaseline = 'middle';
-    gCtx.fillText('https://youtube.com/@maple_meowfunction?si=OAr47RfY97YmuyKO', S3R_X + S3R_W / 2, S3R_Y + S3R_H / 2);
+    gCtx.fillText('videos', S3R_X + S3R_W / 2, S3R_Y + S3R_H / 2);
 
-    // Paint secret room boundaries white
-    gCtx.lineWidth = 2;
-    gCtx.strokeStyle = 'white';
-    for (const wall of scene3WallRects) {
-        if (wall.isSecretWall) {
-            gCtx.strokeRect(wall.x, wall.y, wall.w, wall.h);
-        }
-    }
+    // Line under the text to indicate it's a link
+    const textW = gCtx.measureText('videos').width;
+    gCtx.beginPath();
+    gCtx.moveTo(S3R_X + S3R_W / 2 - textW / 2, S3R_Y + S3R_H / 2 + 10);
+    gCtx.lineTo(S3R_X + S3R_W / 2 + textW / 2, S3R_Y + S3R_H / 2 + 10);
+    gCtx.stroke();
     gCtx.restore();
 
     // Player (reuses scene 2 drawPlayer which uses gCtx)
@@ -1963,10 +1961,19 @@ function scene3Loop() {
 
 // ---- Scene 3 input ----
 
+function tappedSecretLink(screenX, screenY) {
+    const wx = screenX + camX, wy = screenY + camY;
+    const cx = S3R_X + S3R_W / 2, cy = S3R_Y + S3R_H / 2;
+    if (Math.abs(wx - cx) < 60 && Math.abs(wy - cy) < 30) {
+        window.open('https://youtube.com/@maple_meowfunction?si=OAr47RfY97YmuyKO', '_blank');
+    }
+}
+
 function onScene3Click(e) {
     if (e.clientY > window.innerHeight - 52) { exitScene3(); return; }
     tappedCat(e.clientX, e.clientY);
     tappedPlush(e.clientX, e.clientY);
+    tappedSecretLink(e.clientX, e.clientY);
 }
 
 // Unified touch handler — feeds joystick AND tracks pointer for star attraction
@@ -2003,6 +2010,7 @@ function onScene3TouchEndAll(e) {
     for (const t of e.changedTouches) {
         tappedCat(t.clientX, t.clientY);
         tappedPlush(t.clientX, t.clientY);
+        tappedSecretLink(t.clientX, t.clientY);
     }
 }
 
