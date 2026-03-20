@@ -1615,7 +1615,7 @@ function updateScene3Stars() {
     // Convert screen-space pointer to world space for attraction
     const worldPX = s3MouseX + camX;
     const worldPY = s3MouseY + camY;
-    const ATTRACT_R = 220, ATTRACT_F = 0.05, MAX_SPD = 3.5;
+    const ATTRACT_R = 400, ATTRACT_F = 0.25, MAX_SPD = 12;
     const DAMP_FREE = 0.95, DAMP_ATTRACT = 0.97;
     const SPRING_K = 0.008;
 
