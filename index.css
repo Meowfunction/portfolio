@@ -1,9 +1,18 @@
-/* 
- * Design System & Variables 
+/*
+ * Design System & Variables
  * Implements a premium, warm aesthetic with modern touches.
  */
+
+@font-face {
+    font-family: 'Dream';
+    src: url('font/Dream-Regular.otf') format('opentype'),
+         url('font/Dream-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 :root {
-    --bg-color: #FFFAE8;
+    --bg-color: #CBE8FF;
     --text-color: #333333;
     
     /* Brand Colors */
@@ -17,8 +26,8 @@
     --bubble-shadow: 0 8px 32px rgba(255, 66, 21, 0.05); /* Soft warming shadow */
     
     /* Typography */
-    --font-heading: 'Outfit', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-heading: 'Dream', sans-serif;
+    --font-body: 'Dream', sans-serif;
 }
 
 * {
@@ -220,6 +229,15 @@ body {
     font-weight: 500;
 }
 
+.input-hint-img {
+    max-width: 100%;
+    height: auto;
+    max-height: 72px;
+    opacity: 0.7;
+    user-select: none;
+    pointer-events: none;
+}
+
 /* Input row: input + submit button side by side */
 .input-row {
     display: flex;
@@ -270,6 +288,7 @@ body {
     left: 0;
     width: 100%;
     text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 11px;
     color: #333;
     padding: 16px;
@@ -290,7 +309,20 @@ body {
     display: none;
     z-index: 10;
     cursor: default;
-    touch-action: none; /* prevent default scroll/zoom during game */
+    touch-action: none;
+}
+
+/* Scene 3 Star Field Canvas */
+#scene3-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    z-index: 20;
+    cursor: default;
+    touch-action: none;
 }
 
 /* ---- Song Player Widget: vinyl disk + dropdown (top-right) ---- */
@@ -298,7 +330,7 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 20;
+    z-index: 30;
     display: none;          /* shown via JS when Scene 2 starts */
     flex-direction: column;
     align-items: flex-end;
@@ -384,6 +416,18 @@ body {
     line-height: 1;
 }
 
+.song-item.paused {
+    color: var(--tertiary-color);
+    opacity: 0.6;
+}
+
+.song-item.paused::before {
+    content: '⏸';
+    font-size: 0.62rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
 /* Uncollected slot */
 .song-item.unknown {
     color: rgba(51, 51, 51, 0.32);
@@ -416,19 +460,19 @@ body {
 /* Song Collected Toast Popup */
 #song-popup {
     position: fixed;
-    bottom: 70px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     z-index: 50;
     display: none;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.5);
-    border-radius: 50px;
-    padding: 12px 28px;
+    border-radius: 60px;
+    padding: 24px 56px;
     font-family: var(--font-heading);
-    font-size: 1rem;
+    font-size: 2rem;
     font-weight: 600;
     color: var(--text-color);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -438,8 +482,8 @@ body {
 }
 
 @keyframes toastIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1);    }
 }
 
 /* Exhibit Modal Overlay */
@@ -499,4 +543,108 @@ body {
     line-height: 1.65;
     color: var(--text-color);
     opacity: 0.7;
+}
+
+/* ---- Poem Page Modal ---- */
+.poem-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.poem-modal-overlay.visible {
+    display: flex;
+}
+
+.poem-page {
+    background: #FEFAF2;
+    border-radius: 4px;
+    padding: 52px 60px 44px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18), 2px 2px 0 #e8dfc8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+
+.poem-numeral {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.1rem;
+    font-weight: normal;
+    color: #999;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.poem-body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: #2a2218;
+    white-space: pre-wrap;
+    text-align: left;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.poem-close-btn {
+    align-self: center;
+    margin-top: 8px;
+}
+
+/* ---- Artwork Modal ---- */
+.artwork-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.artwork-modal-overlay.visible {
+    display: flex;
+}
+
+.artwork-page {
+    background: #FEFAF2;
+    border-radius: 6px;
+    padding: 36px 40px 32px;
+    max-width: 560px;
+    width: 92%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.22), 2px 2px 0 #e8dfc8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.artwork-title {
+    font-family: Dream, sans-serif;
+    font-size: 1.2rem;
+    color: #555;
+    letter-spacing: 0.08em;
+}
+
+#artwork-img {
+    max-width: 100%;
+    max-height: 60vh;
+    border-radius: 4px;
+    object-fit: contain;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }

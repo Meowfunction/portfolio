@@ -44,7 +44,7 @@ When all 3 songs are collected, the secret room becomes accessible.
 			dialogue: "Welcome back! But you still have to pay the entrance fee~"
 			character image: catPraise.png
 			input: a box that asks the user to type in exactly "Your works are amazing!". Press enter to proceed to 2. $\textcolor{red}{\text{(Note: on mobile, add a forward arrow button after the textbox since enter key is unavailable)}}$
-	2. dialogue: "Take your time to look around. You can get free ice cream on the top of the screen." 
+	2. dialogue: "Take your time to look around. You can get free ice cream everywhere." 
 	   character image: catIce.png
 		choices: ["Thank you"] proceed to scene 2.
 
