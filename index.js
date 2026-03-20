@@ -1932,7 +1932,7 @@ function renderScene3() {
     gCtx.fillStyle = 'rgba(90, 90, 90, 0.88)';
     gCtx.fillRect(0, barY, vw, RETURN_BAR_H);
     gCtx.fillStyle = 'rgba(210, 210, 210, 0.9)';
-    gCtx.font = '15px Arial, Helvetica, sans-serif';
+    gCtx.font = '16px Dream, sans-serif';
     gCtx.textAlign = 'center';
     gCtx.textBaseline = 'middle';
     gCtx.fillText('← return to gallery', vw / 2, barY + RETURN_BAR_H / 2);
