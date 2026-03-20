@@ -840,7 +840,7 @@ function update() {
     // Sync vinyl disk spinning state every frame
     const diskEl = document.getElementById('vinyl-disk');
     if (diskEl) {
-        const isPlaying = currentAudio && !currentAudio.paused && !currentAudio.ended;
+        const isPlaying = currentSongIdx >= 0 && currentAudio && !currentAudio.paused && !currentAudio.ended;
         diskEl.classList.toggle('spinning', !!isPlaying);
     }
 
@@ -2034,7 +2034,7 @@ function scene3Loop() {
     // Keep vinyl spinning in sync while scene 2 update() is paused
     if (!_vinylDiskEl) _vinylDiskEl = _vinylDisk();
     if (_vinylDiskEl) {
-        const isPlaying = currentAudio && !currentAudio.paused && !currentAudio.ended;
+        const isPlaying = currentSongIdx >= 0 && currentAudio && !currentAudio.paused && !currentAudio.ended;
         _vinylDiskEl.classList.toggle('spinning', !!isPlaying);
     }
     requestAnimationFrame(scene3Loop);
@@ -2144,6 +2144,10 @@ function enterScene3() {
 function exitScene3() {
     scene3Active = false;
     s3PointerDown = false;
+    joystick.active = false;
+    joystick.touchId = null;
+    joystick.stickX = joystick.baseX;
+    joystick.stickY = joystick.baseY;
 
     const s3 = document.getElementById('scene3-canvas');
     s3.style.display = 'none';
