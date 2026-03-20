@@ -479,7 +479,7 @@ const SONGS = [
     { id: 's1', x: 365, y: 275, color: '#FFD215', collected: false, name: 'Minor Daisy Bell',      file: 'music/minorDaisyBell.mp3',     imgKey: 'daisy', roomId: 'culinary' },
     { id: 's2', x: 365, y: 825, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3',  imgKey: 'sea',   roomId: 'illustration' },
     { id: 's3', x: 1035, y: 275, color: '#157BFF', collected: false, name: 'A Space Odyssey',      file: 'music/aSpaceOdyssey.mp3',      imgKey: 'space', roomId: 'design' },
-    { id: 's4', collected: true,                    name: 'Dark Whispers',                          file: 'music/darkWhispers.mp3' },
+    { id: 's4', collected: false,                   name: 'Dark Whispers',                          file: 'music/darkWhispers.mp3' },
 ];
 
 // ---- Tap tracking (for paw-icon inspect on mobile) ----
@@ -1776,9 +1776,10 @@ function enterScene3() {
     player.y = OB.bottom - PLAYER_RADIUS - 30;
     player.dir = 'up';
 
-    // Play Dark Whispers — add to collected list if not already there
+    // Unlock Dark Whispers on first entry — reveals it in the dropdown
     const darkWhispers = SONGS.find(s => s.id === 's4');
     if (darkWhispers && !collectedSongs.includes(darkWhispers)) {
+        darkWhispers.collected = true;
         collectedSongs.push(darkWhispers);
     }
     if (darkWhispers) playSong(darkWhispers);
