@@ -849,6 +849,7 @@ function update() {
         popupTimer -= 16;
         if (popupTimer <= 0) document.getElementById('song-popup').style.display = 'none';
     }
+    updateScene2Snow();
 }
 
 
@@ -883,6 +884,7 @@ function render() {
     SONGS.forEach(s => { if (!s.collected) drawSong(s); });
     EXHIBITS.forEach(drawExhibit);
     drawPlayer();
+    drawScene2Snow();
 
     gCtx.restore();
 
@@ -891,6 +893,50 @@ function render() {
 }
 
 // ---- Draw Helpers ----
+
+// ---- Scene 2 Snow Helpers ----
+const scene2Snowflakes = [];
+function initScene2Snow() {
+    for (let i = 0; i < 150; i++) {
+        scene2Snowflakes.push({
+            x: Math.random() * WORLD_W,
+            y: Math.random() * WORLD_H,
+            r: Math.random() * 2 + 0.8,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: Math.random() * 0.7 + 0.3,
+            angle: Math.random() * Math.PI * 2,
+            swing: Math.random() * 0.4 + 0.1
+        });
+    }
+}
+
+function updateScene2Snow() {
+    if (scene2Snowflakes.length === 0) initScene2Snow();
+    for (const p of scene2Snowflakes) {
+        p.angle += 0.02;
+        p.x += Math.sin(p.angle) * p.swing + p.vx;
+        p.y += p.vy;
+
+        if (p.y > WORLD_H + 10) {
+            p.y = -10;
+            p.x = Math.random() * WORLD_W;
+        }
+        if (p.x > WORLD_W + 10) p.x = -10;
+        else if (p.x < -10) p.x = WORLD_W + 10;
+    }
+}
+
+function drawScene2Snow() {
+    gCtx.save();
+    gCtx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    gCtx.beginPath();
+    for (const p of scene2Snowflakes) {
+        gCtx.moveTo(p.x, p.y);
+        gCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    }
+    gCtx.fill();
+    gCtx.restore();
+}
 
 function seg(x1, y1, x2, y2) {
     gCtx.beginPath();
