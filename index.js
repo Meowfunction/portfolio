@@ -431,13 +431,13 @@ const EXHIBITS = [
     { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 275, y: 295, imgSrc: 'rooms/culinary/BananaMage.png' },
     { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 385, y: 295, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
     { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 545, y: 295, imgSrc: 'rooms/culinary/Hamwich.png' },
-    { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 165, y: 330, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
-    { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 165, y: 470, imgSrc: 'rooms/culinary/ItalyPasta.png' },
+    { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 195, y: 330, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
+    { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 195, y: 470, imgSrc: 'rooms/culinary/ItalyPasta.png' },
     // Design    (x: 830–1300, y: 260–630) — top wall & right wall
     { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 915, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
     { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1035, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
     { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1195, y: 295, imgSrc: 'rooms/design/GoldenRatio.png' },
-    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 330, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
+    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 380, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
     { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
     { id: 'i2', roomId: 'illustration', label: "I'm Bach", x: 295, y: 978, imgSrc: 'rooms/illustration/ImBach.GIF' },
@@ -1501,6 +1501,20 @@ let s3Ctx = null;
 let s3MouseX = -9999, s3MouseY = -9999;  // screen-space pointer position
 let s3PointerDown = false;                     // true only while held / finger touching
 let s3PendingAudio = null;                     // song to play on first gesture in scene 3
+
+// ---- Sleeping cat NPC (scene 3, top-left) ----
+const CAT_NPC_W = 80, CAT_NPC_H = 80, CAT_HIT_R = 55;
+const CAT_LINES = [
+    "Sleep is the best remedy\nfor the day. Let me sleep.",
+    "Don't talk to me. You don't\nknow how tiring it is to be\nin charge of the freezer.",
+    "Leave me alone, or I'll\nhaunt you at night!",
+    "Zzz..."
+];
+let catDialogueIdx = 0;   // next line to show
+let catBubbleLine  = -1;  // line currently displayed (-1 = hidden)
+let catBubbleTimer = 0;   // frames remaining
+const catNpcImg = new Image();
+catNpcImg.src = 'images/catSleep.png';
 const scene3Stars = [];
 
 // Scene 3 boundary walls (same OB, but no bottom wall — walking off bottom returns)
@@ -1656,6 +1670,61 @@ function updateScene3Movement() {
     camY = Math.max(0, Math.min(player.y - vh / 2, WORLD_H - vh));
 }
 
+// ---- Cat NPC ----
+
+function drawCatNPC() {
+    const cx = OB.left + 90, cy = OB.top + 90;
+    // Cat image
+    if (catNpcImg.complete && catNpcImg.naturalWidth > 0) {
+        gCtx.drawImage(catNpcImg, cx - CAT_NPC_W / 2, cy - CAT_NPC_H / 2, CAT_NPC_W, CAT_NPC_H);
+    }
+    // Speech bubble
+    if (catBubbleTimer > 0 && catBubbleLine >= 0) {
+        catBubbleTimer--;
+        const lines = CAT_LINES[catBubbleLine].split('\n');
+        const fSize = 13;
+        gCtx.font = `${fSize}px Arial, Helvetica, sans-serif`;
+        const lineH = fSize + 5;
+        const maxW = lines.reduce((m, l) => Math.max(m, gCtx.measureText(l).width), 0);
+        const padX = 12, padY = 9;
+        const bw = maxW + padX * 2;
+        const bh = lines.length * lineH + padY * 2;
+        const bx = cx - bw / 2;
+        const by = cy - CAT_NPC_H / 2 - bh - 14;
+        // Bubble background
+        gCtx.save();
+        gCtx.fillStyle = 'rgba(255,255,255,0.93)';
+        gCtx.strokeStyle = 'rgba(180,180,180,0.7)';
+        gCtx.lineWidth = 1.2;
+        gCtx.beginPath();
+        gCtx.roundRect(bx, by, bw, bh, 8);
+        gCtx.fill(); gCtx.stroke();
+        // Tail triangle pointing down toward cat
+        gCtx.beginPath();
+        gCtx.moveTo(cx - 7, by + bh);
+        gCtx.lineTo(cx + 7, by + bh);
+        gCtx.lineTo(cx, by + bh + 12);
+        gCtx.closePath();
+        gCtx.fillStyle = 'rgba(255,255,255,0.93)';
+        gCtx.fill();
+        // Text
+        gCtx.fillStyle = '#222';
+        gCtx.textAlign = 'center';
+        gCtx.textBaseline = 'top';
+        lines.forEach((l, i) => gCtx.fillText(l, cx, by + padY + i * lineH));
+        gCtx.restore();
+    }
+}
+
+function tappedCat(screenX, screenY) {
+    const wx = screenX + camX, wy = screenY + camY;
+    const cx = OB.left + 90, cy = OB.top + 90;
+    if (Math.hypot(wx - cx, wy - cy) > CAT_HIT_R) return;
+    catBubbleLine  = catDialogueIdx;
+    catDialogueIdx = (catDialogueIdx + 1) % CAT_LINES.length;
+    catBubbleTimer = 320; // ~5 s at 60 fps
+}
+
 // ---- Render ----
 
 function renderScene3() {
@@ -1690,6 +1759,9 @@ function renderScene3() {
         drawStar5Rounded(gCtx, 0, 0, s.outerR, s.innerR);
         gCtx.restore();
     }
+
+    // Sleeping cat NPC
+    drawCatNPC();
 
     // Player (reuses scene 2 drawPlayer which uses gCtx)
     drawPlayer();
@@ -1731,7 +1803,8 @@ function scene3Loop() {
 // ---- Scene 3 input ----
 
 function onScene3Click(e) {
-    if (e.clientY > window.innerHeight - 52) exitScene3();
+    if (e.clientY > window.innerHeight - 52) { exitScene3(); return; }
+    tappedCat(e.clientX, e.clientY);
 }
 
 // Unified touch handler — feeds joystick AND tracks pointer for star attraction
@@ -1761,9 +1834,12 @@ function onScene3TouchMoveAll(e) {
 
 function onScene3TouchEndAll(e) {
     onTouchEnd(e);
-    // If no more non-joystick touches, release pointer
     if (e.touches.length === 0 || (e.touches.length === 1 && joystick.active)) {
         s3PointerDown = false;
+    }
+    // Check cat tap for each lifted finger
+    for (const t of e.changedTouches) {
+        tappedCat(t.clientX, t.clientY);
     }
 }
 
