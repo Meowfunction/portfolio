@@ -454,7 +454,7 @@ const EXHIBITS = [
     { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 915, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
     { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1035, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
     { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1195, y: 295, imgSrc: 'rooms/design/GoldenRatio.png' },
-    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 380, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
+    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 380, imgSrc: 'rooms/design/SonOfManPhoneCase.png' },
     { id: 'd5', roomId: 'design', label: 'Banana Mage', x: 865, y: 470, imgSrc: 'rooms/design/BananaMage.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
     { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
