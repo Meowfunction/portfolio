@@ -427,7 +427,7 @@ const ROOMS = [
         color: '#FFF3DC', opaqueColor: '#FFD366', doorSide: 'bottom', doorGapCx: 130 + 470 * 0.78, entered: false
     },
     {
-        id: 'design', label: 'design room', x: 830, y: 220, w: 470, h: 370,
+        id: 'design', label: 'design', x: 830, y: 220, w: 470, h: 370,
         color: '#EDFFF0', opaqueColor: '#5EFFA0', doorSide: 'bottom', doorGapCx: 800 + 470 * 0.22, entered: false
     },
     {
@@ -458,8 +458,10 @@ const EXHIBITS = [
     { id: 'd5', roomId: 'design', label: 'Banana Mage', x: 865, y: 470, imgSrc: 'rooms/design/BananaMage.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
     { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
-    { id: 'i3', roomId: 'illustration', label: 'Neowsletter', x: 415, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png' },
-    { id: 'i4', roomId: 'illustration', label: 'Pieced Animals', x: 535, y: 978, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
+    { id: 'i3', roomId: 'illustration', label: 'Neowsletter', x: 295, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png' },
+    { id: 'i4', roomId: 'illustration', label: 'Pieced Animals', x: 395, y: 978, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
+    { id: 'i5', roomId: 'illustration', label: 'Koln Cathedral', x: 495, y: 978, imgSrc: 'rooms/illustration/koln_cathedral.jpg' },
+    { id: 'i6', roomId: 'illustration', label: 'Cat Photo', x: 595, y: 978, imgSrc: 'rooms/illustration/cat_photo.jpg' },
     // Characters (x: 830–1300, y: 640–1010) — bottom wall
     { id: 'ch1', roomId: 'characters', label: 'Cake OC', x: 870, y: 978, imgSrc: 'rooms/characters/cake_oc.JPG' },
     { id: 'ch2', roomId: 'characters', label: 'Mirror', x: 965, y: 978, imgSrc: 'rooms/characters/mirror.JPG' },
