@@ -353,7 +353,7 @@ let camX = 0, camY = 0;
 
 // ---- Player ----
 // dir: facing direction used for sprite selection ('left'|'right'|'up'|'down')
-const player = { x: 700, y: 555, dir: 'down' };
+const player = { x: WORLD_W / 2, y: OB.bottom - PLAYER_RADIUS - 30, dir: 'up' };
 
 // ---- Player Sprites (loaded on demand; avatar/ folder) ----
 const playerSprites = { left: null, right: null, up: null, down: null };
