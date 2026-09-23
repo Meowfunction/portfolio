@@ -419,7 +419,7 @@ let songDropdownOpen = false;
 // entered: revealed when player walks in; solid rooms are always open (ice cream counter)
 const ROOMS = [
     {
-        id: 'culinary', label: 'culinary', x: 160, y: 220, w: 470, h: 370,
+        id: 'animation', label: 'animation', x: 160, y: 220, w: 470, h: 370,
         color: '#FFF3DC', opaqueColor: '#FFD366', doorSide: 'bottom', doorGapCx: 130 + 470 * 0.78, entered: false
     },
     {
@@ -439,17 +439,16 @@ const ROOMS = [
 // ---- Exhibit Definitions ----
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
-    // Culinary  (x: 160–630, y: 260–630) — top wall & left wall
-    { id: 'c1', roomId: 'culinary', label: 'Banana Mage', x: 275, y: 295, imgSrc: 'rooms/culinary/BananaMage.png' },
-    { id: 'c2', roomId: 'culinary', label: 'ChatGPT Dot', x: 385, y: 295, imgSrc: 'rooms/culinary/ChatGPTDot.png' },
-    { id: 'c3', roomId: 'culinary', label: 'Hamiltonian Sandwich', x: 545, y: 295, imgSrc: 'rooms/culinary/Hamwich.png' },
-    { id: 'c4', roomId: 'culinary', label: 'Hotdog Toothpaste', x: 195, y: 330, imgSrc: 'rooms/culinary/HotdogToothpaste.png' },
-    { id: 'c5', roomId: 'culinary', label: 'Italy Pasta', x: 195, y: 470, imgSrc: 'rooms/culinary/ItalyPasta.png' },
-    // Design    (x: 830–1300, y: 260–630) — top wall & right wall
+    // Animation (x: 160–630, y: 260–630) — top wall
+    { id: 'a1', roomId: 'animation', label: 'Chiikawa fan animation - Swiss roll', x: 275, y: 295, videoSrc: 'https://www.youtube.com/embed/waBco4I3kGU' },
+    { id: 'a2', roomId: 'animation', label: 'Chiikawa fan animation with real life scenes', x: 385, y: 295, videoSrc: 'https://www.youtube.com/embed/VAxoua7CkpE' },
+    { id: 'a3', roomId: 'animation', label: 'reverse: 1999 fan commissioned animation - critter dance', x: 545, y: 295, videoSrc: 'https://www.youtube.com/embed/prghdhkv2-c' },
+    // Design    (x: 830–1300, y: 260–630) — top wall, right wall & left wall
     { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 915, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
     { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1035, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
     { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1195, y: 295, imgSrc: 'rooms/design/GoldenRatio.png' },
     { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 380, imgSrc: 'rooms/design/MagrittePhoneCase.png' },
+    { id: 'd5', roomId: 'design', label: 'Banana Mage', x: 865, y: 470, imgSrc: 'rooms/design/BananaMage.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
     { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
     { id: 'i2', roomId: 'illustration', label: "I'm Bach", x: 295, y: 978, imgSrc: 'rooms/illustration/ImBach.GIF' },
@@ -477,7 +476,7 @@ EXHIBITS.forEach((ex, i) => { if (ex.iceImgIdx === undefined) ex.iceImgIdx = i %
 
 // ---- Song Collectibles (one per room, centred inside) ----
 const SONGS = [
-    { id: 's1', x: 365, y: 375, color: '#FFD215', collected: false, name: 'Minor Daisy Bell', file: 'music/minorDaisyBell.mp3', imgKey: 'daisy', roomId: 'culinary' },
+    { id: 's1', x: 365, y: 375, color: '#FFD215', collected: false, name: 'Minor Daisy Bell', file: 'music/minorDaisyBell.mp3', imgKey: 'daisy', roomId: 'animation' },
     { id: 's2', x: 365, y: 825, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea', roomId: 'illustration' },
     { id: 's3', x: 1035, y: 375, color: '#157BFF', collected: false, name: 'A Space Odyssey', file: 'music/aSpaceOdyssey.mp3', imgKey: 'space', roomId: 'design' },
     { id: 's5', x: 1035, y: 825, color: '#4CAF50', collected: false, name: 'Looking Down', file: 'music/looking_down.mp3', imgKey: 'leaf', roomId: 'characters' },
@@ -1415,10 +1414,24 @@ function openModal(exhibit) {
         document.getElementById('poem-numeral').textContent = exhibit.label;
         document.getElementById('poem-body').textContent = exhibit.poem;
         document.getElementById('poem-modal').classList.add('visible');
+    } else if (exhibit.videoSrc) {
+        // Show embedded video player in the same artwork window
+        const img = document.getElementById('artwork-img');
+        const videoWrap = document.getElementById('artwork-video-wrap');
+        img.hidden = true;
+        img.src = '';
+        document.getElementById('artwork-title').textContent = exhibit.label;
+        document.getElementById('artwork-video').src = exhibit.videoSrc;
+        videoWrap.classList.add('visible');
+        document.getElementById('artwork-modal').classList.add('visible');
     } else if (exhibit.imgSrc) {
         // Show full artwork image
+        document.getElementById('artwork-video-wrap').classList.remove('visible');
+        document.getElementById('artwork-video').src = '';
+        const img = document.getElementById('artwork-img');
+        img.hidden = false;
         document.getElementById('artwork-title').textContent = exhibit.label;
-        document.getElementById('artwork-img').src = exhibit.imgSrc;
+        img.src = exhibit.imgSrc;
         document.getElementById('artwork-modal').classList.add('visible');
     } else {
         document.getElementById('exhibit-modal-title').textContent = exhibit.label;
@@ -1434,6 +1447,10 @@ function closeModal() {
     document.getElementById('exhibit-modal').classList.remove('visible');
     document.getElementById('poem-modal').classList.remove('visible');
     document.getElementById('artwork-modal').classList.remove('visible');
+    // Stop any playing video by clearing its src
+    document.getElementById('artwork-video').src = '';
+    document.getElementById('artwork-video-wrap').classList.remove('visible');
+    document.getElementById('artwork-img').hidden = false;
 }
 
 
