@@ -146,7 +146,7 @@ const uiElements = {
 const scenes = {
     start: {
         img: 'images/catGreet.png',
-        text: "Hi! I'm Maple. Welcome to my home. Is it your first time here?",
+        text: "Hi, I'm Maple! Welcome to my freezer. There's my art and music buried in the ice creams. Is it your first time here?",
         controls: () => `
             <button class="choice-btn" onclick="handleChoice('Yes')">Yes</button>
             <button class="choice-btn" onclick="handleChoice('No')">No</button>
@@ -154,11 +154,11 @@ const scenes = {
     },
     fee_yes: {
         img: 'images/catPraise.png',
-        text: "Brilliant! You should pay the entrance fee. Type in the box to pay.",
+        text: "Brilliant! You should pay the entrance fee. Type the words below in the box to pay.",
         controls: () => `
             <div class="input-group">
                 <div class="input-row">
-                    <input type="text" id="fee-input" class="text-input" placeholder="Type here..." autocomplete="off">
+                    <input type="text" id="fee-input" class="text-input" placeholder="Type the words below..." autocomplete="off">
                     <button class="submit-btn" id="fee-submit">➜</button>
                 </div>
                 <img class="input-hint-img" src="images/You_have_the_best_domain_ever.PNG" alt="hint" draggable="false">
@@ -168,12 +168,13 @@ const scenes = {
             const input = document.getElementById('fee-input');
             const btn = document.getElementById('fee-submit');
             input.focus();
-            const attempt = () => {
-                if (input.value === "you have the best domain ever!") {
-                    transitionTo('scene2_intro');
-                } else {
-                    triggerInputError(input);
-                }
+                const attempt = () => {
+                    const cleanInput = input.value.toLowerCase().replace(/!/g, '').trim();
+                    if (cleanInput === "you have the best domain ever") {
+                        transitionTo('scene2_intro');
+                    } else {
+                        triggerInputError(input);
+                    }
             };
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') attempt();
@@ -187,7 +188,7 @@ const scenes = {
         controls: () => `
             <div class="input-group">
                 <div class="input-row">
-                    <input type="text" id="fee-input" class="text-input" placeholder="Type here..." autocomplete="off">
+                    <input type="text" id="fee-input" class="text-input" placeholder="Type the words below..." autocomplete="off">
                     <button class="submit-btn" id="fee-submit">➜</button>
                 </div>
                 <img class="input-hint-img" src="images/Your_works_are_amazing.PNG" alt="hint" draggable="false">
@@ -197,12 +198,15 @@ const scenes = {
             const input = document.getElementById('fee-input');
             const btn = document.getElementById('fee-submit');
             input.focus();
-            const attempt = () => {
-                if (input.value === "your works are amazing!") {
-                    transitionTo('scene2_intro');
-                } else {
-                    triggerInputError(input);
-                }
+          const attempt = () => {
+    // lowercase, remove exclamation mark, and trim extra whitespace
+    const cleanInput = input.value.toLowerCase().replace(/!/g, '').trim();
+
+    if (cleanInput === "your works are amazing") {
+        transitionTo('scene2_intro');
+    } else {
+        triggerInputError(input);
+    }
             };
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') attempt();
@@ -375,8 +379,14 @@ let nearestExhibit = null;
 // ---- Scene 2 background image ----
 let bgImage = null;
 const _bgImg = new Image();
-_bgImg.src = 'images/background.png';
+_bgImg.src = 'images/background.jpg';
 _bgImg.onload = () => { bgImage = _bgImg; };
+
+// ---- Scene 2 foreground overlay (drawn on top of everything) ----
+let bgTopImage = null;
+const _bgTopImg = new Image();
+_bgTopImg.src = 'images/background_top.png';
+_bgTopImg.onload = () => { bgTopImage = _bgTopImg; };
 
 // ---- Ice cream exhibit frame images (ice_cream/ice1–6.PNG, randomised per exhibit) ----
 const ICE_IMAGES = Array.from({ length: 6 }, (_, i) => {
@@ -385,9 +395,9 @@ const ICE_IMAGES = Array.from({ length: 6 }, (_, i) => {
     return img;
 });
 
-// ---- Song collectible images (daisy / sea / space) ----
+// ---- Song collectible images (daisy / sea / space / leaf) ----
 const SONG_IMAGES = {};
-[['daisy', 'images/daisy.PNG'], ['sea', 'images/sea.PNG'], ['space', 'images/space.PNG']].forEach(([key, src]) => {
+[['daisy', 'images/daisy.PNG'], ['sea', 'images/sea.PNG'], ['space', 'images/space.PNG'], ['leaf', 'images/leaf.png']].forEach(([key, src]) => {
     const img = new Image();
     img.src = src;
     SONG_IMAGES[key] = img;
@@ -421,7 +431,7 @@ const ROOMS = [
         color: '#FFEDF5', opaqueColor: '#FFB0D8', doorSide: 'top', doorGapCx: 130 + 470 * 0.78, entered: false
     },
     {
-        id: 'poetry', label: 'poetry', x: 830, y: 710, w: 470, h: 370,
+        id: 'characters', label: 'characters', x: 830, y: 710, w: 470, h: 370,
         color: '#F5EDFF', opaqueColor: '#CCA0FF', doorSide: 'top', doorGapCx: 800 + 470 * 0.22, entered: false
     },
 ];
@@ -445,23 +455,12 @@ const EXHIBITS = [
     { id: 'i2', roomId: 'illustration', label: "I'm Bach", x: 295, y: 978, imgSrc: 'rooms/illustration/ImBach.GIF' },
     { id: 'i3', roomId: 'illustration', label: 'Neowsletter', x: 415, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png' },
     { id: 'i4', roomId: 'illustration', label: 'Pieced Animals', x: 535, y: 978, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
-    // Poetry    (x: 800–1270, y: 640–1010) — bottom wall
-    {
-        id: 'p1', roomId: 'poetry', label: 'I', x: 875, y: 978, iceImgIdx: 0,
-        poem: "Today I shall die.\nPlease with\nDandelions,\nWith dandelions fill,\nFill them please!\nDandelions,\nWithin\nMy grave.\nA soft bed\nLaden with\nSoft dreams."
-    },
-    {
-        id: 'p2', roomId: 'poetry', label: 'II', x: 995, y: 978, iceImgIdx: 1,
-        poem: "A face of clay.\nPinched, pulled, punched, pummeled-\nIs it but the toil of reform?\nHah!\nInborn in my body is\nA seed of ill omen.\n\nThe blaze of hope.\nScathed, scorched, singed, seared-\nHas it ushered in a pristine rebirth?\nNay!\nWhen the fruit breaks it's the life\nFlashing before one's eyes."
-    },
-    {
-        id: 'p3', roomId: 'poetry', label: 'III', x: 1115, y: 978, iceImgIdx: 2,
-        poem: "In the subway I sat on\nA seat between\nSeats.\nI leaned forward and saw the compartments\nA tunnel of\nPeople, their waves.\nNo one was talking so the\nSilence stretched my loneliness.\nBut I realized that\nLoneliness is everyone's\nOpen secret."
-    },
-    {
-        id: 'p4', roomId: 'poetry', label: 'IV', x: 1235, y: 978, iceImgIdx: 3,
-        poem: "Looking up at an osmanthus tree:\nYou must love me, or\nFluttering down those sweet\nKisses,\nWhy are they chasing me?"
-    },
+    // Characters (x: 830–1300, y: 640–1010) — bottom wall
+    { id: 'ch1', roomId: 'characters', label: 'Cake OC', x: 870, y: 978, imgSrc: 'rooms/characters/cake_oc.JPG' },
+    { id: 'ch2', roomId: 'characters', label: 'Mirror', x: 965, y: 978, imgSrc: 'rooms/characters/mirror.JPG' },
+    { id: 'ch3', roomId: 'characters', label: 'Mochi', x: 1060, y: 978, imgSrc: 'rooms/characters/mochi.JPG' },
+    { id: 'ch4', roomId: 'characters', label: 'Potion', x: 1155, y: 978, imgSrc: 'rooms/characters/potion.JPG' },
+    { id: 'ch5', roomId: 'characters', label: 'Rei', x: 1250, y: 978, imgSrc: 'rooms/characters/rei.JPG' },
 ];
 
 // Preload room artwork images for exhibits that have imgSrc
@@ -481,6 +480,7 @@ const SONGS = [
     { id: 's1', x: 365, y: 375, color: '#FFD215', collected: false, name: 'Minor Daisy Bell', file: 'music/minorDaisyBell.mp3', imgKey: 'daisy', roomId: 'culinary' },
     { id: 's2', x: 365, y: 825, color: '#FF4215', collected: false, name: 'Lighthouse By The Sea', file: 'music/lighthouseBytheSea.mp3', imgKey: 'sea', roomId: 'illustration' },
     { id: 's3', x: 1035, y: 375, color: '#157BFF', collected: false, name: 'A Space Odyssey', file: 'music/aSpaceOdyssey.mp3', imgKey: 'space', roomId: 'design' },
+    { id: 's5', x: 1035, y: 825, color: '#4CAF50', collected: false, name: 'Looking Down', file: 'music/looking_down.mp3', imgKey: 'leaf', roomId: 'characters' },
     { id: 's4', collected: false, name: 'Dark Whispers', file: 'music/darkWhispers.mp3' },
 ];
 
@@ -808,7 +808,7 @@ function update() {
             songsCollected++;
             collectedSongs.push(song);
             playSong(song);
-            if (songsCollected >= 3) {
+            if (songsCollected >= 4) {
                 secretDoorOpen = true;
                 showToast('🔓 Secret room unlocked!');
             } else {
@@ -884,7 +884,14 @@ function render() {
     SONGS.forEach(s => { if (!s.collected) drawSong(s); });
     EXHIBITS.forEach(drawExhibit);
     drawPlayer();
+    drawExhibitSpoons();
     drawScene2Snow();
+
+    // Foreground overlay drawn last so it sits above rooms, exhibits, and player
+    if (bgTopImage) {
+        const bw = WORLD_W * 1.05, bh = WORLD_H * 1;
+        gCtx.drawImage(bgTopImage, -(bw - WORLD_W) / 2, -(bh - WORLD_H) / 2, bw, bh);
+    }
 
     gCtx.restore();
 
@@ -1040,16 +1047,8 @@ function drawSecretDoorArea() {
         gCtx.font = '600 11px Dream, sans-serif';
         gCtx.textAlign = 'center';
         gCtx.fillText('✨ SECRET', sDCx, OB.top - 8);
-    } else {
-        // Lock icon + progress label
-        gCtx.font = '14px sans-serif';
-        gCtx.textAlign = 'center';
-        gCtx.fillText('🔒', sDCx, OB.top + 8);
-
-        gCtx.fillStyle = 'rgba(140,120,100,0.8)';
-        gCtx.font = '11px Dream, sans-serif';
-        gCtx.fillText(`${songsCollected}/3 songs`, sDCx, OB.top - 2);
     }
+    // Closed state: no indicator at all, for mystery
 }
 
 /**
@@ -1143,11 +1142,20 @@ function drawExhibit(ex) {
             gCtx.drawImage(iceImg, x - hw, y - hh, EXHIBIT_W, EXHIBIT_H);
         }
     }
+}
 
-    // Red spoon icon when player is in range
-    const dist = Math.hypot(player.x - x, player.y - y);
-    if (dist < EXHIBIT_DIST) {
-        drawSpoonIcon(x, y - hh - 14);
+/**
+ * Draw the red spoon icon above any exhibit the player is currently in range of.
+ * Drawn after the player so the icon always appears above the avatar, not behind it.
+ */
+function drawExhibitSpoons() {
+    for (const ex of EXHIBITS) {
+        const parentRoom = ROOMS.find(r => r.id === ex.roomId);
+        if (parentRoom && !parentRoom.entered) continue;
+        const dist = Math.hypot(player.x - ex.x, player.y - ex.y);
+        if (dist < EXHIBIT_DIST) {
+            drawSpoonIcon(ex.x, ex.y - EXHIBIT_H / 2 - 14);
+        }
     }
 }
 
