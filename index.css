@@ -281,6 +281,18 @@ body {
     transform: translateY(-1px);
 }
 
+/* Secret Scene 2 shortcut — invisible tap zone, bottom-left corner */
+#secret-skip {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 70px;
+    height: 70px;
+    z-index: 50;
+    background: transparent;
+    cursor: default;
+}
+
 /* Copyright Footer */
 #copyright {
     position: fixed;

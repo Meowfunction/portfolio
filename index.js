@@ -302,6 +302,10 @@ window.handleChoice = function (choice) {
     }
 };
 
+// Secret shortcut: tap the bottom-left corner of Scene 1 to skip straight into Scene 2
+const secretSkipEl = document.getElementById('secret-skip');
+if (secretSkipEl) secretSkipEl.addEventListener('click', () => startScene2());
+
 // Start the sequence shortly after load
 window.addEventListener('load', () => {
     // Small delay to let initial animations finish
@@ -439,10 +443,13 @@ const ROOMS = [
 // ---- Exhibit Definitions ----
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
-    // Animation (x: 160–630, y: 260–630) — top wall
+    // Animation (x: 160–630, y: 260–630) — top wall, left wall & right wall
     { id: 'a1', roomId: 'animation', label: 'Chiikawa fan animation - Swiss roll', x: 275, y: 295, videoSrc: 'https://www.youtube.com/embed/waBco4I3kGU' },
     { id: 'a2', roomId: 'animation', label: 'Chiikawa fan animation with real life scenes', x: 385, y: 295, videoSrc: 'https://www.youtube.com/embed/VAxoua7CkpE' },
     { id: 'a3', roomId: 'animation', label: 'reverse: 1999 fan commissioned animation - critter dance', x: 545, y: 295, videoSrc: 'https://www.youtube.com/embed/prghdhkv2-c' },
+    { id: 'a4', roomId: 'animation', label: "I'm Bach", x: 195, y: 330, imgSrc: 'rooms/animation/ImBach.GIF' },
+    { id: 'a5', roomId: 'animation', label: 'Bun Eating', x: 195, y: 470, imgSrc: 'rooms/animation/bun_eating.gif' },
+    { id: 'a6', roomId: 'animation', label: 'Vampire', x: 595, y: 400, imgSrc: 'rooms/animation/vampire.gif' },
     // Design    (x: 830–1300, y: 260–630) — top wall, right wall & left wall
     { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 915, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
     { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1035, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
@@ -451,7 +458,6 @@ const EXHIBITS = [
     { id: 'd5', roomId: 'design', label: 'Banana Mage', x: 865, y: 470, imgSrc: 'rooms/design/BananaMage.png' },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
     { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
-    { id: 'i2', roomId: 'illustration', label: "I'm Bach", x: 295, y: 978, imgSrc: 'rooms/illustration/ImBach.GIF' },
     { id: 'i3', roomId: 'illustration', label: 'Neowsletter', x: 415, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png' },
     { id: 'i4', roomId: 'illustration', label: 'Pieced Animals', x: 535, y: 978, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
     // Characters (x: 830–1300, y: 640–1010) — bottom wall
