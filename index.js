@@ -444,30 +444,30 @@ const ROOMS = [
 // Placed ~30px inside room walls; y≈room.y+30 for top wall, x≈room.x+30 for left wall
 const EXHIBITS = [
     // Animation (x: 160–630, y: 260–630) — top wall, left wall & right wall
-    { id: 'a1', roomId: 'animation', label: 'Chiikawa fan animation - Swiss roll', x: 275, y: 295, videoSrc: 'https://www.youtube.com/embed/waBco4I3kGU' },
-    { id: 'a2', roomId: 'animation', label: 'Chiikawa fan animation with real life scenes', x: 385, y: 295, videoSrc: 'https://www.youtube.com/embed/VAxoua7CkpE' },
-    { id: 'a3', roomId: 'animation', label: 'reverse: 1999 fan commissioned animation - critter dance', x: 545, y: 295, videoSrc: 'https://www.youtube.com/embed/prghdhkv2-c' },
-    { id: 'a4', roomId: 'animation', label: "I'm Bach", x: 195, y: 330, imgSrc: 'rooms/animation/ImBach.GIF' },
-    { id: 'a5', roomId: 'animation', label: 'Bun Eating', x: 195, y: 470, imgSrc: 'rooms/animation/bun_eating.gif' },
-    { id: 'a6', roomId: 'animation', label: 'Vampire', x: 595, y: 400, imgSrc: 'rooms/animation/vampire.gif' },
+    { id: 'a1', roomId: 'animation', label: 'Chiikawa fan animation - Swiss roll', x: 275, y: 295, videoSrc: 'https://www.youtube.com/embed/waBco4I3kGU', desc: 'Independent animation.' },
+    { id: 'a2', roomId: 'animation', label: 'Chiikawa fan animation with real life scenes', x: 385, y: 295, videoSrc: 'https://www.youtube.com/embed/VAxoua7CkpE', desc: 'Independent animation, winner in a contest on Bilibili.' },
+    { id: 'a3', roomId: 'animation', label: 'reverse: 1999 fan commissioned animation - critter dance', x: 545, y: 295, videoSrc: 'https://www.youtube.com/embed/prghdhkv2-c', desc: 'Independent animation, commissioned by this game company.' },
+    { id: 'a4', roomId: 'animation', label: "I'm Bach", x: 195, y: 330, imgSrc: 'rooms/animation/ImBach.GIF', desc: "Original character Frankenstein's Bach and Maple cat." },
+    { id: 'a5', roomId: 'animation', label: 'Bun Eating', x: 195, y: 470, imgSrc: 'rooms/animation/bun_eating.gif', desc: 'Private commission.' },
+    { id: 'a6', roomId: 'animation', label: 'Vampire', x: 595, y: 400, imgSrc: 'rooms/animation/vampire.gif', desc: 'Private commission.' },
     // Design    (x: 830–1300, y: 260–630) — top wall, right wall & left wall
-    { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 915, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg' },
-    { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1035, y: 295, imgSrc: 'rooms/design/FoxtailVase.png' },
-    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1195, y: 295, imgSrc: 'rooms/design/GoldenRatio.png' },
-    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 380, imgSrc: 'rooms/design/SonOfManPhoneCase.png' },
-    { id: 'd5', roomId: 'design', label: 'Banana Mage', x: 865, y: 470, imgSrc: 'rooms/design/BananaMage.png' },
+    { id: 'd1', roomId: 'design', label: 'AGI Hoodie', x: 915, y: 295, imgSrc: 'rooms/design/AGIHoodie.jpg', desc: "Inspired by the painting Creation of Adam. In my design, the AGI's hand corresponds to the hand of God in the original piece. The future of AGI lies in the hand of humanity, just like how Adam had to choose in the face of the omniscient God." },
+    { id: 'd2', roomId: 'design', label: 'Foxtail Vase', x: 1035, y: 295, imgSrc: 'rooms/design/FoxtailVase.png', desc: 'Maple cat exploring a nine-tailed fox vase.' },
+    { id: 'd3', roomId: 'design', label: 'The Continued Fraction of Phi', x: 1195, y: 295, imgSrc: 'rooms/design/GoldenRatio.png', desc: 'My math art piece. It visually connects the recursion of continued fractions and the Droste effect in photography techniques.' },
+    { id: 'd4', roomId: 'design', label: 'Son of Man Phone Case', x: 1235, y: 380, imgSrc: 'rooms/design/SonOfManPhoneCase.png', desc: "Inspired by Magritte's famous piece, Son of Man. The Apple logo on the phone symbolizes modern technology. As people search for their identity in this highly digitalized and anonymous world, they can get closer to the truth but also receive an obscured perception." },
+    { id: 'd5', roomId: 'design', label: 'Banana Mage', x: 865, y: 470, imgSrc: 'rooms/design/BananaMage.png', desc: "Maple cat's adventure with a sculpted banana." },
     // Illustration (x: 130–600, y: 640–1010) — bottom wall
-    { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png' },
-    { id: 'i3', roomId: 'illustration', label: 'Neowsletter', x: 295, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png' },
-    { id: 'i4', roomId: 'illustration', label: 'Pieced Animals', x: 395, y: 978, imgSrc: 'rooms/illustration/PiecedAnimals.jpg' },
+    { id: 'i1', roomId: 'illustration', label: 'Brief Spring', x: 195, y: 978, imgSrc: 'rooms/illustration/BriefSpring.png', desc: "ChatGPT's logo turned into a rose, symbolizing the brief lifetime before an AI model's retirement." },
+    { id: 'i3', roomId: 'illustration', label: 'Neowsletter', x: 295, y: 978, imgSrc: 'rooms/illustration/Neowsletter.png', desc: 'Fanart featured in the May Neowsletter of Slay the Spire.' },
+    { id: 'i4', roomId: 'illustration', label: 'Pieced Animals', x: 395, y: 978, imgSrc: 'rooms/illustration/PiecedAnimals.jpg', desc: 'Watercolor art of animals living behind bars.' },
     { id: 'i5', roomId: 'illustration', label: 'Koln Cathedral', x: 495, y: 978, imgSrc: 'rooms/illustration/koln_cathedral.jpg' },
-    { id: 'i6', roomId: 'illustration', label: 'Cat Photo', x: 595, y: 978, imgSrc: 'rooms/illustration/cat_photo.jpg' },
+    { id: 'i6', roomId: 'illustration', label: 'Cat Photo', x: 595, y: 978, imgSrc: 'rooms/illustration/cat_photo.jpg', desc: "Art for my friend's cats." },
     // Characters (x: 830–1300, y: 640–1010) — bottom wall
-    { id: 'ch1', roomId: 'characters', label: 'Cake OC', x: 870, y: 978, imgSrc: 'rooms/characters/cake_oc.JPG' },
-    { id: 'ch2', roomId: 'characters', label: 'Mirror', x: 965, y: 978, imgSrc: 'rooms/characters/mirror.JPG' },
-    { id: 'ch3', roomId: 'characters', label: 'Mochi', x: 1060, y: 978, imgSrc: 'rooms/characters/mochi.JPG' },
-    { id: 'ch4', roomId: 'characters', label: 'Potion', x: 1155, y: 978, imgSrc: 'rooms/characters/potion.JPG' },
-    { id: 'ch5', roomId: 'characters', label: 'Rei', x: 1250, y: 978, imgSrc: 'rooms/characters/rei.JPG' },
+    { id: 'ch1', roomId: 'characters', label: 'Cake OC', x: 870, y: 978, imgSrc: 'rooms/characters/cake_oc.JPG', desc: 'Original character that takes after the strawberry shortcake.' },
+    { id: 'ch2', roomId: 'characters', label: 'Mirror', x: 965, y: 978, imgSrc: 'rooms/characters/mirror.JPG', desc: 'The cover art for my video commissioned by Reverse: 1999.' },
+    { id: 'ch3', roomId: 'characters', label: 'Mochi', x: 1060, y: 978, imgSrc: 'rooms/characters/mochi.JPG', desc: "Illustration for my friend's character." },
+    { id: 'ch4', roomId: 'characters', label: 'Potion', x: 1155, y: 978, imgSrc: 'rooms/characters/potion.JPG', desc: 'The cover art for a collab video.' },
+    { id: 'ch5', roomId: 'characters', label: 'Rei', x: 1250, y: 978, imgSrc: 'rooms/characters/rei.JPG', desc: 'Illustration of Ayanami Rei from Evangelion.' },
 ];
 
 // Preload room artwork images for exhibits that have imgSrc
@@ -1416,6 +1416,17 @@ function onTouchEnd(e) {
 //  Exhibit Modal
 // ============================================================
 
+function setArtworkDesc(desc) {
+    const descEl = document.getElementById('artwork-desc');
+    if (desc) {
+        descEl.textContent = desc;
+        descEl.classList.add('visible');
+    } else {
+        descEl.textContent = '';
+        descEl.classList.remove('visible');
+    }
+}
+
 function openModal(exhibit) {
     if (exhibit.poem) {
         // Show dedicated poem page
@@ -1431,6 +1442,7 @@ function openModal(exhibit) {
         document.getElementById('artwork-title').textContent = exhibit.label;
         document.getElementById('artwork-video').src = exhibit.videoSrc;
         videoWrap.classList.add('visible');
+        setArtworkDesc(exhibit.desc);
         document.getElementById('artwork-modal').classList.add('visible');
     } else if (exhibit.imgSrc) {
         // Show full artwork image
@@ -1440,6 +1452,7 @@ function openModal(exhibit) {
         img.hidden = false;
         document.getElementById('artwork-title').textContent = exhibit.label;
         img.src = exhibit.imgSrc;
+        setArtworkDesc(exhibit.desc);
         document.getElementById('artwork-modal').classList.add('visible');
     } else {
         document.getElementById('exhibit-modal-title').textContent = exhibit.label;

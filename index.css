@@ -680,3 +680,20 @@ body {
     border: none;
     display: block;
 }
+
+.artwork-desc {
+    display: none;
+    width: 100%;
+    max-height: 6.5em;
+    overflow-y: auto;
+    font-family: Dream, sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #666;
+    text-align: left;
+    padding-right: 8px;
+}
+
+.artwork-desc.visible {
+    display: block;
+}
